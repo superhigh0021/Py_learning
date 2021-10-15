@@ -1,4 +1,2 @@
-a=12
-b=13
-c=15
-print(a)
+x=57
+print(x/2)
