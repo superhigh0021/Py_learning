@@ -1,6 +1,6 @@
 import random
-chance=2
-x=random.randint(0,100)
+chance=3
+x=random.randint(0,10)
 while chance>0:
     input=int(input("Please input an integer(from 0 to 100): "))
     if input==x:
