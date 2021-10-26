@@ -6,4 +6,4 @@ if input==x:
 elif input<x:
     print("Too small, the right answer is %d"%x)
 else:
-    print("Too large, the right answer is %d"%x)    
+    print("Too large, the right answer is %d"%x)

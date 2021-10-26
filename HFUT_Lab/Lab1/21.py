@@ -14,4 +14,6 @@ def binary_search(llist,target):
         return False
 
 llist=[1,2,3,4,5,6,7,8,9,10]
-binary_search(llist,10)
+while True:
+    target=int(input("Please enter your target: "))
+    binary_search(llist,target)

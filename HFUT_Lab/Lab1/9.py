@@ -7,5 +7,6 @@ def judge(str):
             break;
     else:
         return True
-
-print(judge('abcba'))
+while True:
+    str=input("Please input a string: ")
+    print(judge(str))

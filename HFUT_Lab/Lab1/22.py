@@ -8,4 +8,6 @@ for item in llist:
         dic[item]=1
     else:
         dic[item]+=1
+print()
+print()
 print(dic)
