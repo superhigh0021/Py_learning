@@ -21,7 +21,7 @@ class StudentInfo:
 
     def grade_modify(self):
         choose = input("If you want to modify/add a subject,input 1: ")
-        if choose == 1:
+        if choose == '1':
             str = input('Please input the subject you want to add/modify: ')
             grade = int(input("Please input the grade of that subject: "))
             if self.grade.get(str, 0) != 0:
@@ -46,16 +46,17 @@ def rank_student(list):
 
 
 str = input("Please input your filename: ")
-fp = open(str, 'r')
+fp = open(str, 'r',encoding='utf-8')
 student_info = fp.readlines()
 student_list = []
-for i in range(0, len(list)):
+for i in range(0, len(student_info)):
     student_list.append(StudentInfo(student_info[i]))
 while input("modify the grade,type 'y':") == 'y':
     name = input("input the name who you want to modify his grade: ")
     for item in student_list:
         if item.name == name:
             item.grade_modify()
+            break;
     else:
         print("the guy is nowhere to be found.")
 rank_student(student_list)
