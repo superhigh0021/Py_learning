@@ -8,6 +8,7 @@ for item in str:
     elif item.isupper():
         item=item.lower()
     new_str+=item
+print()
 print(new_str)
 fp.write(new_str)
 fp.close()

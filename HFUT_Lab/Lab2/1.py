@@ -20,8 +20,8 @@ class StudentInfo:
         self.aver = int(sum(self.grade.values()) / len(self.grade))
 
     def grade_modify(self):
-        choose = input("If you want to modify/add a subject,input 1: ")
-        if choose == '1':
+        choose = input("If you want to modify/add a subject,input y: ")
+        if choose == 'y':
             str = input('Please input the subject you want to add/modify: ')
             grade = int(input("Please input the grade of that subject: "))
             if self.grade.get(str, 0) != 0:
@@ -41,24 +41,26 @@ class StudentInfo:
                                                    self.grade, self.aver,
                                                    rank))
 
+
 def rank_student(list):
-    list.sort(key=lambda x:x.aver,reverse=True)
+    list.sort(key=lambda x: x.aver, reverse=True)
 
 
-str = input("Please input your filename: ")
-fp = open(str, 'r',encoding='utf-8')
-student_info = fp.readlines()
-student_list = []
-for i in range(0, len(student_info)):
-    student_list.append(StudentInfo(student_info[i]))
+fp = open(input("Please input your filename: "), 'r', encoding='utf-8')
+student_info_line = fp.readlines()
+student_list = list()
+
+for i in range(len(student_info_line)):
+    student_list.append(StudentInfo(student_info_line[i]))
 while input("modify the grade,type 'y':") == 'y':
     name = input("input the name who you want to modify his grade: ")
     for item in student_list:
         if item.name == name:
             item.grade_modify()
-            break;
+            break
     else:
-        print("the guy is nowhere to be found.")
+        print("The guy is nowhere to be found.")
+
 rank_student(student_list)
 
 rank = 1
