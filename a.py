@@ -1,990 +1,480 @@
-#! /usr/bin/env python
+# -*- coding: utf-8 -*-
 
-import sys
+
+import base64
 import time
-import random
-from optparse import OptionParser
+import json
+import re
+import requests
+import os
+import Crypto.PublicKey.RSA
+import Crypto.Cipher.PKCS1_v1_5
 
-#
-# HELPER
-#
-def dospace(howmuch):
-    for i in range(howmuch):
-        print '%24s' % ' ',
-
-# useful instead of assert
-def zassert(cond, str):
-    if cond == False:
-        print 'ABORT::', str
-        exit(1)
-    return
-
-class cpu:
-    #
-    # INIT: how much memory?
-    #
-    def __init__(self, memory, memtrace, regtrace, cctrace, compute, verbose):
-        #
-        # CONSTANTS
-        #
-        
-        # conditions
-        self.COND_GT        = 0
-        self.COND_GTE       = 1
-        self.COND_LT        = 2
-        self.COND_LTE       = 3
-        self.COND_EQ        = 4
-        self.COND_NEQ       = 5
-
-        # registers in system
-        self.REG_ZERO       = 0
-        self.REG_AX         = 1
-        self.REG_BX         = 2
-        self.REG_CX         = 3
-        self.REG_DX         = 4
-        self.REG_SP         = 5
-        self.REG_BP         = 6
-
-        # system memory: in KB
-        self.max_memory     = memory * 1024
-
-        # which memory addrs and registers to trace?
-        self.memtrace       = memtrace
-        self.regtrace       = regtrace
-        self.cctrace        = cctrace
-        self.compute        = compute
-        self.verbose        = verbose
-
-        self.PC             = 0
-        self.registers      = {}
-        self.conditions     = {}
-        self.labels         = {}
-        self.vars           = {}
-        self.memory         = {}
-        self.pmemory        = {}  # for printable version of what's in memory (instructions)
-
-        self.condlist       = [self.COND_GTE, self.COND_GT, self.COND_LTE, self.COND_LT, self.COND_NEQ, self.COND_EQ]
-        self.regnums        = [self.REG_ZERO, self.REG_AX,  self.REG_BX,   self.REG_CX,  self.REG_DX,   self.REG_SP,  self.REG_BP]
-
-        self.regnames         = {}
-        self.regnames['zero'] = self.REG_ZERO # hidden zero-valued register
-        self.regnames['ax']   = self.REG_AX
-        self.regnames['bx']   = self.REG_BX
-        self.regnames['cx']   = self.REG_CX
-        self.regnames['dx']   = self.REG_DX
-        self.regnames['sp']   = self.REG_SP
-        self.regnames['bp']   = self.REG_BP
-
-        tmplist = []
-        for r in self.regtrace:
-            zassert(r in self.regnames, 'Register %s cannot be traced because it does not exist' % r)
-            tmplist.append(self.regnames[r])
-        self.regtrace = tmplist
-
-        self.init_memory()
-        self.init_registers()
-        self.init_condition_codes()
-
-    #
-    # BEFORE MACHINE RUNS
-    #
-    def init_condition_codes(self):
-        for c in self.condlist:
-            self.conditions[c] = False
-
-    def init_memory(self):
-        for i in range(self.max_memory):
-            self.memory[i] = 0
-
-    def init_registers(self):
-        for i in self.regnums:
-            self.registers[i] = 0
-
-    def dump_memory(self):
-        print 'MEMORY DUMP'
-        for i in range(self.max_memory):
-            if i not in self.pmemory and i in self.memory and self.memory[i] != 0:
-                print '  m[%d]' % i, self.memory[i]
-
-    #
-    # INFORMING ABOUT THE HARDWARE
-    #
-    def get_regnum(self, name):
-        assert(name in self.regnames)
-        return self.regnames[name]
-
-    def get_regname(self, num):
-        assert(num in self.regnums)
-        for rname in self.regnames:
-            if self.regnames[rname] == num:
-                return rname
-        return ''
+"""
+第一部分：获取用户长江雨课堂相应试卷的课程Id和课堂Id
+"""
+#对密码进行RSA加密
+def RSA_PSW(pwd):
+    try:
+        public_key = "-----BEGIN PUBLIC KEY-----\nMIGJAoGBAJAFo9ftysQfr+NLiFEPuVmuwVEh1/ASEffSicWeudbGJEBPM/1YSd5c\nkRkeimbO52Q1LlsOnnVIKcFQYaB8v+xRSuWuFXbGdNJ7WNGX3bh6NXmuRWSKKLzm\nOn0bx4msk3qSUezQ99h+ngRUnzrzyqmLmIRO2D6rghOhzITIPX7vAgMBAAE=\n-----END PUBLIC KEY-----"
+        y = pwd.encode(encoding="utf-8")
+        b = public_key.encode(encoding="utf-8")
+        cipher_public = Crypto.Cipher.PKCS1_v1_5.new(Crypto.PublicKey.RSA.importKey(b))
+        #使用长江雨课堂公钥进行加密
+        cipher_text = cipher_public.encrypt(y)
+        text = base64.b64encode(cipher_text).decode(encoding="utf-8")
+        return text
+    except:
+        return False
     
-    def get_regnums(self):
-        return self.regnums
+#登录长江雨课堂
+def login(tel,pwd):
+    url = 'https://changjiang.yuketang.cn/pc/login/verify_pwd_login/'
+    data = {
+            "type":"PP",
+            "name":tel,
+            "pwd":pwd
+    }
+    headers={
+            'Connection': 'keep-alive',
+            'Content-Language':'zh-cn',
+            'Content-Type': 'text/html; charset=utf-8',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Language': 'zh-CN,zh;q=0.9',
+            'Host': 'changjiang.yuketang.cn',
+            'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Mobile Safari/537.36'
+    }
+    try:
+        session = requests.session()
+        cookie_jar = session.post(url=url,json=data,headers=headers,verify=False).cookies
+        cookie_t = requests.utils.dict_from_cookiejar(cookie_jar)
+        cookieStr = "csrftoken=" + cookie_t['csrftoken'] + ";" + "sessionid=" + cookie_t['sessionid']
+        return cookieStr
+    except:
+        return False
 
-    def get_condlist(self):
-        return self.condlist
-
-    def get_reg(self, reg):
-        assert(reg in self.regnums)
-        return self.registers[reg]
-
-    def get_cond(self, cond):
-        assert(cond in self.condlist)
-        return self.conditions[cond]
-
-    def get_pc(self):
-        return self.PC
-        
-    def set_reg(self, reg, value):
-        assert(reg in self.regnums)
-        self.registers[reg] = value
-
-    def set_cond(self, cond, value):
-        assert(cond in self.condlist)
-        self.conditions[cond] = value
-
-    def set_pc(self, pc):
-        self.PC = pc
-        
-    #
-    # INSTRUCTIONS
-    #
-    def halt(self):
-        return -1
-
-    def iyield(self):
-        return -2
-
-    def nop(self):
-        return 0
-
-    def rdump(self):
-        print 'REGISTERS::',
-        print 'ax:', self.registers[self.REG_AX], 
-        print 'bx:', self.registers[self.REG_BX], 
-        print 'cx:', self.registers[self.REG_CX], 
-        print 'dx:', self.registers[self.REG_DX],
-
-    def mdump(self, index):
-        print 'm[%d] ' % index, self.memory[index]
-
-    def move_i_to_r(self, src, dst):
-        self.registers[dst] = src
-        return 0
-
-    # memory: value, register, register
-    def move_i_to_m(self, src, value, reg1, reg2):
-        tmp = value + self.registers[reg1] + self.registers[reg2]
-        self.memory[tmp] = src
-        return 0
-
-    def move_m_to_r(self, value, reg1, reg2, dst):
-        tmp = value + self.registers[reg1] + self.registers[reg2]
-        # print 'doing mov', 'val:', value, 'r1:', self.get_regname(reg1), self.registers[reg1], 'r2:', self.get_regname(reg2), self.registers[reg2], 'dst', self.get_regname(dst), 'tmp', tmp, 'reg[dst]', self.registers[dst], 'mem', self.memory[tmp]
-        self.registers[dst] = self.memory[tmp] 
-
-    def move_r_to_m(self, src, value, reg1, reg2):
-        tmp = value + self.registers[reg1] + self.registers[reg2]
-        self.memory[tmp] = self.registers[src]
-        return 0
-
-    def move_r_to_r(self, src, dst):
-        self.registers[dst] = self.registers[src]
-        return 0
-
-    def add_i_to_r(self, src, dst):
-        self.registers[dst] += src
-        return 0
-
-    def add_r_to_r(self, src, dst):
-        self.registers[dst] += self.registers[src]
-        return 0
-
-    def sub_i_to_r(self, src, dst):
-        self.registers[dst] -= src
-        return 0
-
-    def sub_r_to_r(self, src, dst):
-        self.registers[dst] -= self.registers[src]
-        return 0
-
-
-    #
-    # SUPPORT FOR LOCKS
-    #
-    def atomic_exchange(self, src, value, reg1, reg2):
-        tmp                 = value + self.registers[reg1] + self.registers[reg2]
-        old                 = self.memory[tmp]
-        self.memory[tmp]    = self.registers[src]
-        self.registers[src] = old
-        return 0
-
-    def fetchadd(self, src, value, reg1, reg2):
-        tmp                 = value + self.registers[reg1] + self.registers[reg2]
-        old                 = self.memory[tmp]
-        self.memory[tmp]    = self.memory[tmp] + self.registers[src] 
-        self.registers[src] = old
-
-    #
-    # TEST for conditions
-    #
-    def test_all(self, src, dst):
-        self.init_condition_codes()
-        if dst > src:
-            self.conditions[self.COND_GT]  = True
-        if dst >= src:
-            self.conditions[self.COND_GTE] = True
-        if dst < src:
-            self.conditions[self.COND_LT]  = True
-        if dst <= src:
-            self.conditions[self.COND_LTE] = True
-        if dst == src:
-            self.conditions[self.COND_EQ]  = True
-        if dst != src:
-            self.conditions[self.COND_NEQ] = True
-        return 0
-
-    def test_i_r(self, src, dst):
-        self.init_condition_codes()
-        return self.test_all(src, self.registers[dst])
-
-    def test_r_i(self, src, dst):
-        self.init_condition_codes()
-        return self.test_all(self.registers[src], dst)
-
-    def test_r_r(self, src, dst):
-        self.init_condition_codes()
-        return self.test_all(self.registers[src], self.registers[dst])
-
-    #
-    # JUMPS
-    #
-    def jump(self, targ):
-        self.PC = targ  
-        return 0
+def smlogin(cookieinfo):
+    try:
+        cookie_t = cookieinfo
+        cookieStr = "csrftoken=" + cookie_t['csrftoken'] + ";" + "sessionid=" + cookie_t['sessionid']
+        return cookieStr
+    except:
+        return False
     
-    def jump_notequal(self, targ):
-        if self.conditions[self.COND_NEQ] == True:
-            self.PC = targ
-        return 0
+#查找课程的信息
+def showCourse(cookieStr):
+    cookie = cookieStr
+    url = "https://changjiang.yuketang.cn/v/course_meta/my_courses?_date="
+    curtime = "{0:.3f}".format(float(time.time())).replace(".","")
+    url += curtime
+    try:
+        headers={
+            'accept':'*/*',
+            'accept-language':'zh-CN,zh;q=0.9',
+            'connection':'keep-alive',
+            'referer':url,
+            'Cookie': cookie,
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36'
+        }
+        response = requests.get(url=url,headers=headers,verify=False)
+        courseinfo = response.json()
+        return courseinfo['data']['classrooms']
+    except:
+        return False
 
-    def jump_equal(self, targ):
-        if self.conditions[self.COND_EQ] == True:
-            self.PC = targ
-        return 0
+#提取课程关键信息     
+def getCourse(courseinfo):
+    course_list = []
+    try:
+        for elem in courseinfo:
+            elem_list = []
+            courseName = elem['course']['name'] + ","              #课程名
+            courseId = str(elem['course']['id']) + ","             #course_id
+            classroomId = str(elem['id']) + ","                    #classroom_id
+            studentCount = str(elem['students_count']) + ","       #学生人数
+            startTime = elem['time'] + ","                         #开课时间
+            university = elem['university_name']             #学校名称
+            elem_list.append(courseName)
+            elem_list.append(courseId)
+            elem_list.append(classroomId)
+            elem_list.append(studentCount)
+            elem_list.append(startTime)
+            elem_list.append(university)
+            course_list.append(elem_list)
+        return course_list 
+    except:
+        return False
 
-    def jump_lessthan(self, targ):
-        if self.conditions[self.COND_LT] == True:
-            self.PC = targ
-        return 0
+#将提取课程信息写入文件            
+def writeCourseInfo(courselist,url):
+    fileadd = url
+    dicts = {}
+    try:
+        fo = open(fileadd,'w')
+        suoyin = 1
+        for lists in courselist:
+            listLen = len(lists)
+            for i in range(listLen):
+                fo.write(lists[i])
+            fo.write("\n")
+            dicts[str(suoyin)] = lists[0].replace(',','')
+            suoyin += 1
+        fo.close()
+        return True,url,dicts
+    except:
+        return False,url,dicts
 
-    def jump_lessthanorequal(self, targ):
-        if self.conditions[self.COND_LTE] == True:
-            self.PC = targ
-        return 0
+#读取写入的课程信息文件            
+def readCourseInfo(query,url):
+    fileadd = url
+    queryNUm = query
+    course_id = "无"
+    classroom_id = "无"
+    try:
+        fo = open(fileadd,'r')
+        data = fo.read().split('\n')
+        suoyin = 1
+        for lists in data:
+            lists = lists.split(',')
+            listLen = len(lists)
+            for i in range(listLen):
+                if(queryNUm == str(suoyin)):
+                    course_id = lists[1]
+                    classroom_id = lists[2]
+            suoyin += 1
+        fo.close()
+        return True,course_id,classroom_id
+    except:
+        return False,course_id,classroom_id
 
-    def jump_greaterthan(self, targ):
-        if self.conditions[self.COND_GT] == True:
-            self.PC = targ
-        return 0
+#获取所查询课程详细信息
+def getDetailQuery(cookie,course_id,classroom_id):
+    #获取每门课程考试的Id
+    curtime = "{0:.3f}".format(float(time.time())).replace(".","")
+    url = "https://changjiang.yuketang.cn/v/course_meta/classroom_logs?course_id=" + course_id + "&classroom_id=" + classroom_id + "&activity_type=-1&date_time=" + curtime
+    try:
+        headers={
+            'accept':'*/*',
+            'accept-language':'zh-CN,zh;q=0.9',
+            'connection':'keep-alive',
+            'referer':url,
+            'Cookie': cookie,
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36'
+        }
+        response = requests.get(url=url,headers=headers,verify=False)
+        exam = response.json()
+        return exam['data']['activities']
+    except:
+        return False
 
-    def jump_greaterthanorequal(self, targ):
-        if self.conditions[self.COND_GTE] == True:
-            self.PC = targ
-        return 0
+#提取所查询课程关键详细信息 
+def getExam(queryinfo):
+    query_list = []
+    try:
+        for elem in queryinfo:
+            for el in elem:
+                if(str(el['type']) == '4'):
+                    elem_list = []
+                    examTitle = el['title']                     #项目名
+                    examId = str(el['id'])                      #项目id
+                    quizId = str(el['courseware_id'])           #courseware_id
+                    queryType = str(el['type'])                 #类型(Type=4为试卷)
+                    elem_list.append(examTitle)
+                    elem_list.append(examId)
+                    elem_list.append(quizId)
+                    elem_list.append(queryType)
+                    query_list.append(elem_list)
+        return query_list 
+    except:
+        return False
 
-    #
-    # CALL and RETURN
-    #
-    def call(self, targ):
-        self.registers[self.REG_SP] -= 4
-        self.memory[self.registers[self.REG_SP]] = self.PC 
-        self.PC = targ
+#获取所要查询试卷加密的题目信息
+def getHtml(cookie,query,rawaddr):
+    url = "https://changjiang.yuketang.cn/quiz/quiz_info/" +  query + "/"
+    try:
+        headers={
+            'accept':'*/*',
+            'accept-language':'zh-CN,zh;q=0.9',
+            'connection':'keep-alive',
+            'referer':url,
+            'Cookie': cookie,
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36'
+        }
+        response = requests.get(url=url,headers=headers,verify=False)
+        exam = response.text
+        fo = open(rawaddr,'w')
+        fo.write(exam)
+        fo.close()
+        return True
+    except:
+        return False
 
-    def ret(self):
-        self.PC = self.memory[self.registers[self.REG_SP]]
-        self.registers[self.REG_SP] += 4
+#获取加密字段
+def getSecret(rawaddr,dataaddr):
+    try:
+        fo = open(rawaddr,'r')
+        fs = open(dataaddr,'w')
+        data = fo.read()
+        p = re.compile(r'var quizData = "(.*?)";')
+        data = p.findall(data)
+        fs.write(data[0])
+        fo.close()
+        fs.close()
+        return True
+    except:
+        return False
+    
+"""
+第二部分：长江雨课堂对应试卷作答情况解密
+"""
+#读取加密文件
+def readCode(readUrl):
+    try:
+        url = readUrl
+        rcode = open(url,'r')
+        code = rcode.readline()
+        rcode.close()
+        return code
+    except:
+        return False
 
-    #
-    # STACK and related
-    #
-    def push_r(self, reg):
-        self.registers[self.REG_SP] -= 4
-        self.memory[self.registers[self.REG_SP]] = self.registers[reg]
-        return 0
+#写入解密文件
+def writeText(writeUrl,text):
+    try:
+        url = writeUrl
+        wcode = open(url,'w')
+        wcode.write(text)
+        wcode.close()
+        return "写入解密文件完毕"
+    except:
+        return "写入解密文件失败"
 
-    def push_m(self, value, reg1, reg2):
-        # print 'push_m', value, reg1, reg2
-        self.registers[self.REG_SP] -= 4
-        tmp = value + self.registers[reg1] + self.registers[reg2]
-        # push address onto stack, not memory value itself
-        self.memory[self.registers[self.REG_SP]] = tmp
-        return 0
+# base64解密
+def base64Decode(rawCode):
+    try:
+        mystr = rawCode
+        str_url = base64.b64decode(mystr).decode("utf-8")
+        return str_url
+    except:
+        return False
 
-    def pop(self):
-        self.registers[self.REG_SP] += 4
-
-    def pop_r(self, dst):
-        self.registers[dst] = self.registers[self.REG_SP]
-        self.registers[self.REG_SP] += 4
-
-    #
-    # HELPER func for getarg
-    #
-    def register_translate(self, r):
-        if r in self.regnames:
-            return self.regnames[r]
-        zassert(False, 'Register %s is not a valid register' % r)
-        return
-
-    #
-    # HELPER in parsing mov (quite primitive) and other ops
-    # returns: (value, type)
-    # where type is (TYPE_REGISTER, TYPE_IMMEDIATE, TYPE_MEMORY)
-    # 
-    # FORMATS
-    #    %ax           - register
-    #    $10           - immediate
-    #    10            - direct memory
-    #    10(%ax)       - memory + reg indirect
-    #    10(%ax,%bx)   - memory + 2 reg indirect
-    #    10(%ax,%bx,4) - XXX (not handled)
-    #
-    def getarg(self, arg):
-        tmp1 = arg.replace(',', '')
-        tmp  = tmp1.replace(' \t', '')
-
-        if tmp[0] == '$':
-            zassert(len(tmp) == 2, 'correct form is $number (not %s)' % tmp)
-            value = tmp.split('$')[1]
-            zassert(value.isdigit(), 'value [%s] must be a digit' % value)
-            return int(value), 'TYPE_IMMEDIATE'
-        elif tmp[0] == '%':
-            register = tmp.split('%')[1]
-            return self.register_translate(register), 'TYPE_REGISTER'
-        elif tmp[0] == '(':
-            register = tmp.split('(')[1].split(')')[0].split('%')[1]
-            return '%d,%d,%d' % (0, self.register_translate(register), self.register_translate('zero')), 'TYPE_MEMORY'
-        elif tmp[0] == '.':
-            targ = tmp
-            return targ, 'TYPE_LABEL'
-        elif tmp[0].isalpha() and not tmp[0].isdigit():
-            zassert(tmp in self.vars, 'Variable %s is not declared' % tmp)
-            # print '%d,%d,%d' % (self.vars[tmp], self.register_translate('zero'), self.register_translate('zero')), 'TYPE_MEMORY'
-            return '%d,%d,%d' % (self.vars[tmp], self.register_translate('zero'), self.register_translate('zero')), 'TYPE_MEMORY'
-        elif tmp[0].isdigit() or tmp[0] == '-':
-            # MOST GENERAL CASE: number(reg,reg) or number(reg)
-            # we ignore the common x86 number(reg,reg,constant) for now
-            neg = 1
-            if tmp[0] == '-':
-                tmp = tmp[1:]
-                neg = -1
-            s = tmp.split('(')
-            if len(s) == 1:
-                value = neg * int(tmp)
-                # print '%d,%d,%d' % (int(value), self.register_translate('zero'), self.register_translate('zero')), 'TYPE_MEMORY'
-                return '%d,%d,%d' % (int(value), self.register_translate('zero'), self.register_translate('zero')), 'TYPE_MEMORY'
-            elif len(s) == 2:
-                value = neg * int(s[0])
-                t = s[1].split(')')[0].split(',')
-                if len(t) == 1:
-                    register = t[0].split('%')[1]
-                    # print '%d,%d,%d' % (int(value), self.register_translate(register), self.register_translate('zero')), 'TYPE_MEMORY'
-                    return '%d,%d,%d' % (int(value), self.register_translate(register), self.register_translate('zero')), 'TYPE_MEMORY'
-                elif len(t) == 2:
-                    register1 = t[0].split('%')[1]
-                    register2 = t[1].split('%')[1]
-                    # print '%d,%d,%d' % (int(value), self.register_translate(register1), self.register_translate(register2)), 'TYPE_MEMORY'
-                    return '%d,%d,%d' % (int(value), self.register_translate(register1), self.register_translate(register2)), 'TYPE_MEMORY'
-            else:
-                print 'mov: bad argument [%s]' % tmp
-                exit(1)
-                return
-        zassert(True, 'mov: bad argument [%s]' % arg)
-        return
-
-    #
-    # LOAD a program into memory
-    # make it ready to execute
-    #
-    def load(self, infile, loadaddr):
-        pc   = int(loadaddr)
-        fd   = open(infile)
-
-        bpc  = loadaddr
-        data = 100
-
-        for line in fd:
-            cline = line.rstrip()
-            # print 'PASS 1', cline
-
-            # remove everything after the comment marker
-            ctmp = cline.split('#')
-            assert(len(ctmp) == 1 or len(ctmp) == 2)
-            if len(ctmp) == 2:
-                cline = ctmp[0]
-
-            # remove empty lines, and split line by spaces
-            tmp = cline.split()
-            if len(tmp) == 0:
+"""
+第三部分：获取试卷题目图片
+"""
+#获取试卷中所有的图片链接
+def getImgUrl(decodeaddr,imgsaveDir):
+    try:
+        fo = open(decodeaddr,'r')
+        data = json.loads(fo.read())
+        problemdata = data['Slides']
+        dicts = {'0':'题目','1':'A','2':'B','3':'C','4':'D','5':'E','6':'F','7':'G'}
+        alllist = []
+        urllist = []
+        for problem in problemdata:
+            urllist = []
+            suoyin = 0
+            try:
+                for en in problem['Shapes']:
+                    problemlist = []
+                    problemlist.append(dicts[str(suoyin)])
+                    problemlist.append(en['URL'])                               #获取图片链接
+                    urllist.append(problemlist)
+                    suoyin += 1
+                problemlist = []
+                try:
+                    Answers = str(problem['Problem']['Answer'])
+                    try:
+                        if(str(problem['Problem']['analysis']) == "None"):
+                            Analysis = "暂无分析"
+                        else:
+                            Analysis = str(problem['Problem']['analysis'])
+                    except:
+                        Analysis = "暂无分析"
+                    if(Answers == ""):
+                        Answers = "答案暂未公布(可能包含在分析中)"
+                    problemlist.append('问题ID:' + str(problem['Problem']['ProblemID']))            #获取问题ID
+                    problemlist.append('标准答案:' + Answers)                                       #获取答案
+                    problemlist.append('我的作答:' + str(problem['Problem']['Result']['Answer']))   #获取我的作答
+                    problemlist.append('分析:' + Analysis)                                          #分析(很可能含答案)
+                    urllist.append(problemlist)
+                    alllist.append(urllist)
+                except:
+                    alllist.append(urllist)
+                    print('这是封面')
+            except:
                 continue
-
-            # only pay attention to labels and variables
-            if tmp[0] == '.var':
-                assert(len(tmp) == 2)
-                assert(tmp[0] not in self.vars)
-                self.vars[tmp[1]] = data
-                data += 4
-                zassert(data < bpc, 'Load address overrun by static data')
-                if self.verbose: print 'ASSIGN VAR', tmp[0], "-->", tmp[1], self.vars[tmp[1]]
-            elif tmp[0][0] == '.':
-                assert(len(tmp) == 1)
-                self.labels[tmp[0]] = int(pc)
-                if self.verbose: print 'ASSIGN LABEL', tmp[0], "-->", pc
-            else:
-                pc += 1
-        fd.close()
-
-        if self.verbose: print ''
-
-        # second pass: do everything else
-        pc = int(loadaddr)
-        fd = open(infile)
-        for line in fd:
-            cline = line.rstrip()
-            # print 'PASS 2', cline
-
-            # remove everything after the comment marker
-            ctmp = cline.split('#')
-            assert(len(ctmp) == 1 or len(ctmp) == 2)
-            if len(ctmp) == 2:
-                cline = ctmp[0]
-
-            # remove empty lines, and split line by spaces
-            tmp = cline.split()
-            if len(tmp) == 0:
-                continue
-
-            # skip labels: all else must be instructions
-            if cline[0] != '.':
-                tmp              = cline.split(None, 1)
-                opcode           = tmp[0]
-                self.pmemory[pc] = cline.strip()
-
-                # MAIN OPCODE LOOP
-                if opcode == 'mov':
-                    rtmp = tmp[1].split(',', 1)
-                    zassert(len(tmp) == 2 and len(rtmp) == 2, 'mov: needs two args, separated by commas [%s]' % cline)
-                    arg1 = rtmp[0].strip()
-                    arg2 = rtmp[1].strip()
-                    (src, stype) = self.getarg(arg1)
-                    (dst, dtype) = self.getarg(arg2)
-                    # print 'MOV', src, stype, dst, dtype
-                    if stype == 'TYPE_MEMORY' and dtype == 'TYPE_MEMORY':
-                        print 'bad mov: two memory arguments'
-                        exit(1)
-                    elif stype == 'TYPE_IMMEDIATE' and dtype == 'TYPE_IMMEDIATE':
-                        print 'bad mov: two immediate arguments'
-                        exit(1)
-                    elif stype == 'TYPE_IMMEDIATE' and dtype == 'TYPE_REGISTER':
-                        self.memory[pc]  = 'self.move_i_to_r(%d, %d)' % (int(src), dst)
-                    elif stype == 'TYPE_IMMEDIATE' and dtype == 'TYPE_REGISTER':
-                        self.memory[pc]  = 'self.move_i_to_r(%d, %d)' % (int(src), dst)
-                    elif stype == 'TYPE_MEMORY'    and dtype == 'TYPE_REGISTER':
-                        tmp = src.split(',')
-                        assert(len(tmp) == 3)
-                        self.memory[pc] = 'self.move_m_to_r(%d, %d, %d, %d)' % (int(tmp[0]), int(tmp[1]), int(tmp[2]), dst)
-                    elif stype == 'TYPE_REGISTER'  and dtype == 'TYPE_MEMORY':
-                        tmp = dst.split(',')
-                        assert(len(tmp) == 3)
-                        self.memory[pc] = 'self.move_r_to_m(%d, %d, %d, %d)' % (src, int(tmp[0]), int(tmp[1]), int(tmp[2]))
-                    elif stype == 'TYPE_REGISTER'  and dtype == 'TYPE_REGISTER':
-                        self.memory[pc] = 'self.move_r_to_r(%d, %d)' % (src, dst)
-                    elif stype == 'TYPE_IMMEDIATE'  and dtype == 'TYPE_MEMORY':
-                        tmp = dst.split(',')
-                        assert(len(tmp) == 3)
-                        self.memory[pc] = 'self.move_i_to_m(%d, %d, %d, %d)' % (src, int(tmp[0]), int(tmp[1]), int(tmp[2]))
-                    else:
-                        zassert(False, 'malformed mov instruction')
-                elif opcode == 'pop':
-                    if len(tmp) == 1:
-                        self.memory[pc] = 'self.pop()'
-                    elif len(tmp) == 2:
-                        arg = tmp[1].strip()
-                        (dst, dtype) = self.getarg(arg)
-                        zassert(dtype == 'TYPE_REGISTER', 'Can only pop into a register')
-                        self.memory[pc] = 'self.pop_r(%d)' % dst
-                    else:
-                        zassert(False, 'pop instruction must take zero/one args')
-                elif opcode == 'push':
-                    (src, stype) = self.getarg(tmp[1].strip())
-                    if stype == 'TYPE_REGISTER':
-                        self.memory[pc] = 'self.push_r(%d)' % (int(src))
-                    elif stype == 'TYPE_MEMORY':
-                        tmp = src.split(',')
-                        assert(len(tmp) == 3)
-                        self.memory[pc] = 'self.push_m(%d,%d,%d)' % (int(tmp[0]), int(tmp[1]), int(tmp[2]))
-                    else:
-                        zassert(False, 'Cannot push anything but registers')
-                elif opcode == 'call':
-                    (targ, ttype) = self.getarg(tmp[1].strip())
-                    if ttype == 'TYPE_LABEL':
-                        self.memory[pc] = 'self.call(%d)' % (int(self.labels[targ]))
-                    else:
-                        zassert(False, 'Cannot call anything but a label')
-                elif opcode == 'ret':
-                    assert(len(tmp) == 1)
-                    self.memory[pc] = 'self.ret()'
-                elif opcode == 'add':
-                    rtmp = tmp[1].split(',', 1)
-                    zassert(len(tmp) == 2 and len(rtmp) == 2, 'add: needs two args, separated by commas [%s]' % cline)
-                    arg1 = rtmp[0].strip()
-                    arg2 = rtmp[1].strip()
-                    (src, stype) = self.getarg(arg1)
-                    (dst, dtype) = self.getarg(arg2)
-                    if stype == 'TYPE_IMMEDIATE' and dtype == 'TYPE_REGISTER':
-                        self.memory[pc] = 'self.add_i_to_r(%d, %d)' % (int(src), dst)
-                    elif stype == 'TYPE_REGISTER' and dtype == 'TYPE_REGISTER':
-                        self.memory[pc] = 'self.add_r_to_r(%d, %d)' % (int(src), dst)
-                    else:
-                        zassert(False, 'malformed usage of add instruction')
-                elif opcode == 'sub':
-                    rtmp = tmp[1].split(',', 1)
-                    zassert(len(tmp) == 2 and len(rtmp) == 2, 'sub: needs two args, separated by commas [%s]' % cline)
-                    arg1 = rtmp[0].strip()
-                    arg2 = rtmp[1].strip()
-                    (src, stype) = self.getarg(arg1)
-                    (dst, dtype) = self.getarg(arg2)
-                    if stype == 'TYPE_IMMEDIATE' and dtype == 'TYPE_REGISTER':
-                        self.memory[pc] = 'self.sub_i_to_r(%d, %d)' % (int(src), dst)
-                    elif stype == 'TYPE_REGISTER' and dtype == 'TYPE_REGISTER':
-                        self.memory[pc] = 'self.sub_r_to_r(%d, %d)' % (int(src), dst)
-                    else:
-                        zassert(False, 'malformed usage of sub instruction')
-                elif opcode == 'fetchadd':
-                    rtmp = tmp[1].split(',', 1)
-                    zassert(len(tmp) == 2 and len(rtmp) == 2, 'fetchadd: needs two args, separated by commas [%s]' % cline)
-                    arg1 = rtmp[0].strip()
-                    arg2 = rtmp[1].strip()
-                    (src, stype) = self.getarg(arg1)
-                    (dst, dtype) = self.getarg(arg2)
-                    tmp = dst.split(',')
-                    assert(len(tmp) == 3)
-                    if stype == 'TYPE_REGISTER' and dtype == 'TYPE_MEMORY':
-                        self.memory[pc] = 'self.fetchadd(%d, %d, %d, %d)' % (src, int(tmp[0]), int(tmp[1]), int(tmp[2]))
-                    else:
-                        zassert(False, 'poorly specified fetch and add')
-                elif opcode == 'xchg':
-                    rtmp = tmp[1].split(',', 1)
-                    zassert(len(tmp) == 2 and len(rtmp) == 2, 'xchg: needs two args, separated by commas [%s]' % cline)
-                    arg1 = rtmp[0].strip()
-                    arg2 = rtmp[1].strip()
-                    (src, stype) = self.getarg(arg1)
-                    (dst, dtype) = self.getarg(arg2)
-                    tmp = dst.split(',')
-                    assert(len(tmp) == 3)
-                    if stype == 'TYPE_REGISTER' and dtype == 'TYPE_MEMORY':
-                        self.memory[pc] = 'self.atomic_exchange(%d, %d, %d, %d)' % (src, int(tmp[0]), int(tmp[1]), int(tmp[2]))
-                    else:
-                        zassert(False, 'poorly specified atomic exchange')
-                elif opcode == 'test':
-                    rtmp = tmp[1].split(',', 1)
-                    zassert(len(tmp) == 2 and len(rtmp) == 2, 'test: needs two args, separated by commas [%s]' % cline)
-                    arg1 = rtmp[0].strip()
-                    arg2 = rtmp[1].strip()
-                    (src, stype) = self.getarg(arg1)
-                    (dst, dtype) = self.getarg(arg2)
-                    if stype == 'TYPE_IMMEDIATE' and dtype == 'TYPE_REGISTER':
-                        self.memory[pc] = 'self.test_i_r(%d, %d)' % (int(src), dst)
-                    elif stype == 'TYPE_REGISTER' and dtype == 'TYPE_REGISTER':
-                        self.memory[pc] = 'self.test_r_r(%d, %d)' % (int(src), dst)
-                    elif stype == 'TYPE_REGISTER' and dtype == 'TYPE_IMMEDIATE':
-                        self.memory[pc] = 'self.test_r_i(%d, %d)' % (int(src), dst)
-                    else:
-                        zassert(False, 'malformed usage of test instruction')
-                elif opcode == 'j':
-                    (targ, ttype) = self.getarg(tmp[1].strip())
-                    zassert(ttype == 'TYPE_LABEL', 'bad jump target [%s]' % tmp[1].strip())
-                    self.memory[pc] = 'self.jump(%d)' % int(self.labels[targ])
-                elif opcode == 'jne':
-                    (targ, ttype) = self.getarg(tmp[1].strip())
-                    zassert(ttype == 'TYPE_LABEL', 'bad jump target [%s]' % tmp[1].strip())
-                    self.memory[pc] = 'self.jump_notequal(%d)' % int(self.labels[targ])
-                elif opcode == 'je':
-                    (targ, ttype) = self.getarg(tmp[1].strip())
-                    zassert(ttype == 'TYPE_LABEL', 'bad jump target [%s]' % tmp[1].strip())
-                    self.memory[pc] = 'self.jump_equal(%d)' % self.labels[targ]
-                elif opcode == 'jlt':
-                    (targ, ttype) = self.getarg(tmp[1].strip())
-                    zassert(ttype == 'TYPE_LABEL', 'bad jump target [%s]' % tmp[1].strip())
-                    self.memory[pc] = 'self.jump_lessthan(%d)' % int(self.labels[targ])
-                elif opcode == 'jlte':
-                    (targ, ttype) = self.getarg(tmp[1].strip())
-                    zassert(ttype == 'TYPE_LABEL', 'bad jump target [%s]' % tmp[1].strip())
-                    self.memory[pc] = 'self.jump_lessthanorequal(%s)' % self.labels[targ]
-                elif opcode == 'jgt':
-                    (targ, ttype) = self.getarg(tmp[1].strip())
-                    zassert(ttype == 'TYPE_LABEL', 'bad jump target [%s]' % tmp[1].strip())
-                    self.memory[pc] = 'self.jump_greaterthan(%d)' % int(self.labels[targ])
-                elif opcode == 'jgte':
-                    (targ, ttype) = self.getarg(tmp[1].strip())
-                    zassert(ttype == 'TYPE_LABEL', 'bad jump target [%s]' % tmp[1].strip())
-                    self.memory[pc] = 'self.jump_greaterthanorequal(%s)' % self.labels[targ]
-                elif opcode == 'nop':
-                    self.memory[pc] = 'self.nop()'
-                elif opcode == 'halt':
-                    self.memory[pc] = 'self.halt()'
-                elif opcode == 'yield':
-                    self.memory[pc] = 'self.iyield()'
-                elif opcode == 'rdump':
-                    self.memory[pc] = 'self.rdump()'
-                elif opcode == 'mdump':
-                    self.memory[pc] = 'self.mdump(%s)' % tmp[1]
-                else:
-                    print 'illegal opcode: ', opcode
-                    exit(1)
-
-                if self.verbose: print 'pc:%d LOADING %20s --> %s' % (pc, self.pmemory[pc], self.memory[pc])
                 
-                # INCREMENT PC for loader
-                pc += 1
-        # END: loop over file
-        fd.close()
-        if self.verbose: print ''
-        return
-    # END: load
+        count = 1
+        for url in alllist:
+            answerDir = imgsaveDir + '答案.csv'
+            if(count == 1):
+                #覆盖之前的答案
+                fs = open(answerDir,'w')
+                fs.write("")
+                fs.close()
+            fs = open(answerDir,'a+')
+            if(len(url) >= 2):
+                fs.write(str(url[0][1]) + str(url[-1]) + '\n')
+                fs.close()
+            elif(len(url) <= 1):
+                fs.write('----' + '\n')
+            else:
+                fs.write(str(url[0][1]) + str(url[1]) + '\n')
+                fs.close()
+            for i in range(len(url)):
+                try:
+                    imgName = ""
+                    imgUrl = url[i][1]
+                    print(imgUrl)
+                    imgName += "第" + str(count) + "题"
+                    if(len(imgUrl) >= 5 and imgUrl[0:5] == "https"):
+                        imgName += str(url[i][0])
+                        imgres = requests.get(imgUrl) #取得文件内容
+                        imgSaveUrl = imgsaveDir + "{0:0>3}".format(str(count)) + '-' + str(i) + '.png'
+                        with open(imgSaveUrl, "wb") as f:
+                           f.write(imgres.content)
+                           f.close()
+                        time.sleep(0.1)
+                except:
+                    continue
+            count += 1
+        os._exit(0)
+        return True
+    except Exception as e:
+        print(e)
+        return False
 
-    def print_headers(self, procs):
-        # print some headers
-        if len(self.memtrace) > 0:
-            for m in self.memtrace:
-                if m[0].isdigit():
-                    print '%5d' % int(m),
-                else:
-                    zassert(m in self.vars, 'Traced variable %s not declared' % m)
-                    print '%5s' % m,
-            print ' ',
-        if len(self.regtrace) > 0:
-            for r in self.regtrace:
-                print '%5s' % self.get_regname(r),
-            print ' ',
-        if cctrace == True:
-            print '>= >  <= <  != ==', 
+"""
+第四部分：其他功能相关函数
+"""
+#创建目录文件夹 
+def mkdir(path):
+    try:
+        # 去除首位空格
+        path=path.strip()
+        # 去除尾部 \ 符号
+        path=path.rstrip("\\") 
+        # 判断路径是否存在
+        # 存在     True
+        # 不存在   False
+        isExists=os.path.exists(path) 
+        # 判断结果
+        if not isExists:
+            # 如果不存在则创建目录
+            # 创建目录操作函数
+            os.makedirs(path) 
+            print(path+'创建成功')
+            return True
+        else:
+            # 如果目录存在则不创建，并提示目录已存在
+            print(path+'目录已存在')
+            return False
+    except Exception as e:
+        print("mkdir(path)--ERROR"+e)
+        return False
 
-        # and per thread
-        for i in range(procs.getnum()):
-            print '       Thread %d        ' % i,
-        print ''
-        return
-
-    def print_trace(self, newline):
-        if len(self.memtrace) > 0:
-            for m in self.memtrace:
-                if self.compute:
-                    if m[0].isdigit():
-                        print '%5d' % self.memory[int(m)],
-                    else:
-                        zassert(m in self.vars, 'Traced variable %s not declared' % m)
-                        print '%5d' % self.memory[self.vars[m]],
-                else:
-                    print '%5s' % '?',
-            print ' ',
-        if len(self.regtrace) > 0:
-            for r in self.regtrace:
-                if self.compute:
-                    print '%5d' % self.registers[r],
-                else:
-                    print '%5s' % '?',
-            print ' ',
-        if cctrace == True:
-            for c in self.condlist:
-                if self.compute:
-                    if self.conditions[c]:
-                        print '1 ',
-                    else:
-                        print '0 ',
-                else:
-                    print '? ',
-        if (len(self.memtrace) > 0 or len(self.regtrace) > 0 or cctrace == True) and newline == True:
-            print ''
-        return
-
-    def setint(self, intfreq, intrand):
-        if intrand == False:
-            return intfreq
-        return int(random.random() * intfreq) + 1
-
-    def run(self, procs, intfreq, intrand):
-        # hw init: cc's, interrupt frequency, etc.
-        interrupt = self.setint(intfreq, intrand)
-        icount    = 0
-
-        self.print_headers(procs)
-        self.print_trace(True)
-        
-        while True:
-            # need thread ID of current process
-            tid = procs.getcurr().gettid()
-
-            # FETCH
-            prevPC       = self.PC
-            instruction  = self.memory[self.PC]
-            self.PC     += 1
-
-            # DECODE and EXECUTE
-            # key: self.PC may be changed during eval; thus MUST be incremented BEFORE eval
-            rc = eval(instruction)
-
-            # tracing details: ALWAYS AFTER EXECUTION OF INSTRUCTION
-            self.print_trace(False)
-
-            # output: thread-proportional spacing followed by PC and instruction
-            dospace(tid)
-            print prevPC, self.pmemory[prevPC]
-            icount += 1
-
-            # halt instruction issued
-            if rc == -1:
-                procs.done()
-                if procs.numdone() == procs.getnum():
-                    return icount
-                procs.next()
-                procs.restore()
-
-                self.print_trace(False)
-                for i in range(procs.getnum()):
-                    print '----- Halt;Switch ----- ',
-                print ''
-
-            # do interrupt processing
-            interrupt -= 1
-            if interrupt == 0 or rc == -2:
-                interrupt = self.setint(intfreq, intrand)
-                procs.save()
-                procs.next()
-                procs.restore()
-
-                self.print_trace(False)
-                for i in range(procs.getnum()):
-                    print '------ Interrupt ------ ',
-                print ''
-        # END: while
-        return
-
-# 
-# END: class cpu
-# 
-
-
-#
-# PROCESS LIST class
-#
-class proclist:
-    def __init__(self):
-        self.plist  = []
-        self.curr   = 0
-        self.active = 0
-
-    def done(self):
-        self.plist[self.curr].setdone()
-        self.active -= 1
-
-    def numdone(self):
-        return len(self.plist) - self.active
-
-    def getnum(self):
-        return len(self.plist)
-
-    def add(self, p):
-        self.active += 1
-        self.plist.append(p)
-
-    def getcurr(self):
-        return self.plist[self.curr]
-
-    def save(self):
-        self.plist[self.curr].save()
-
-    def restore(self):
-        self.plist[self.curr].restore()
-
-    def next(self):
-        for i in range(self.curr+1, len(self.plist)):
-            if self.plist[i].isdone() == False:
-                self.curr = i
-                return
-        for i in range(0, self.curr+1):
-            if self.plist[i].isdone() == False:
-                self.curr = i
-                return
-            
-#
-# PROCESS class
-#
-class process:
-    def __init__(self, cpu, tid, pc, stackbottom, reginit):
-        self.cpu   = cpu  # object reference
-        self.tid   = tid
-        self.pc    = pc
-        self.regs  = {}
-        self.cc    = {}
-        self.done  = False
-        self.stack = stackbottom
-
-        # init regs: all 0 or specially set to something
-        for r in self.cpu.get_regnums():
-            self.regs[r] = 0
-        if reginit != '':
-            # form: ax=1,bx=2 (for some subset of registers)
-            for r in reginit.split(':'):
-                tmp = r.split('=')
-                assert(len(tmp) == 2)
-                self.regs[self.cpu.get_regnum(tmp[0])] = int(tmp[1])
-
-        # init CCs
-        for c in self.cpu.get_condlist():
-            self.cc[c] = False
-
-        # stack
-        self.regs[self.cpu.get_regnum('sp')] = stackbottom
-        # print 'REG', self.cpu.get_regnum('sp'), self.regs[self.cpu.get_regnum('sp')]
-
-        return
-
-    def gettid(self):
-        return self.tid
-
-    def save(self):
-        self.pc = self.cpu.get_pc()
-        for c in self.cpu.get_condlist():
-            self.cc[c] = self.cpu.get_cond(c)
-        for r in self.cpu.get_regnums():
-            self.regs[r] = self.cpu.get_reg(r)
-
-    def restore(self):
-        self.cpu.set_pc(self.pc)
-        for c in self.cpu.get_condlist():
-            self.cpu.set_cond(c, self.cc[c])
-        for r in self.cpu.get_regnums():
-            self.cpu.set_reg(r, self.regs[r])
-
-    def setdone(self):
-        self.done = True
-
-    def isdone(self):
-        return self.done == True
-
-#
-# main program
-#
-parser = OptionParser()
-parser.add_option('-s', '--seed',      default=0,          help='the random seed',                  action='store',      type='int',    dest='seed')
-parser.add_option('-t', '--threads',   default=2,          help='number of threads',                action='store',      type='int',    dest='numthreads')
-parser.add_option('-p', '--program',   default='',         help='source program (in .s)',           action='store',      type='string', dest='progfile')
-parser.add_option('-i', '--interrupt', default=50,         help='interrupt frequency',              action='store',      type='int',    dest='intfreq')
-parser.add_option('-r', '--randints',  default=False,      help='if interrupts are random',         action='store_true',                dest='intrand')
-parser.add_option('-a', '--argv',      default='',
-                  help='comma-separated per-thread args (e.g., ax=1,ax=2 sets thread 0 ax reg to 1 and thread 1 ax reg to 2); specify multiple regs per thread via colon-separated list (e.g., ax=1:bx=2,cx=3 sets thread 0 ax and bx and just cx for thread 1)',
-                  action='store',      type='string', dest='argv')
-parser.add_option('-L', '--loadaddr',  default=1000,       help='address where to load code',       action='store',      type='int',    dest='loadaddr')
-parser.add_option('-m', '--memsize',   default=128,        help='size of address space (KB)',       action='store',      type='int',    dest='memsize')
-parser.add_option('-M', '--memtrace',  default='',         help='comma-separated list of addrs to trace (e.g., 20000,20001)', action='store',
-                  type='string', dest='memtrace')
-parser.add_option('-R', '--regtrace',  default='',         help='comma-separated list of regs to trace (e.g., ax,bx,cx,dx)',  action='store',
-                  type='string', dest='regtrace')
-parser.add_option('-C', '--cctrace',   default=False,      help='should we trace condition codes',  action='store_true', dest='cctrace')
-parser.add_option('-S', '--printstats',default=False,      help='print some extra stats',           action='store_true', dest='printstats')
-parser.add_option('-v', '--verbose',   default=False,      help='print some extra info',            action='store_true', dest='verbose')
-parser.add_option('-c', '--compute',   default=False,      help='compute answers for me',           action='store_true', dest='solve')
-(options, args) = parser.parse_args()
-
-print 'ARG seed',                options.seed
-print 'ARG numthreads',          options.numthreads
-print 'ARG program',             options.progfile
-print 'ARG interrupt frequency', options.intfreq
-print 'ARG interrupt randomness',options.intrand
-print 'ARG argv',                options.argv
-print 'ARG load address',        options.loadaddr
-print 'ARG memsize',             options.memsize
-print 'ARG memtrace',            options.memtrace
-print 'ARG regtrace',            options.regtrace
-print 'ARG cctrace',             options.cctrace
-print 'ARG printstats',          options.printstats
-print 'ARG verbose',             options.verbose
-print ''
-
-seed       = int(options.seed)
-numthreads = int(options.numthreads)
-intfreq    = int(options.intfreq)
-zassert(intfreq > 0, 'Interrupt frequency must be greater than 0')
-intrand    = int(options.intrand)
-progfile   = options.progfile
-zassert(progfile != '', 'Program file must be specified')
-argv       = options.argv.split(',')
-zassert(len(argv) == numthreads or len(argv) == 1, 'argv: must be one per-thread or just one set of values for all threads') 
-
-loadaddr   = options.loadaddr
-memsize    = options.memsize
-random.seed(seed)
-
-memtrace   = []
-if options.memtrace != '':
-    for m in options.memtrace.split(','):
-        memtrace.append(m)
-
-regtrace   = []
-if options.regtrace != '':
-    for r in options.regtrace.split(','):
-        regtrace.append(r)
-
-cctrace    = options.cctrace
-
-printstats = options.printstats
-verbose    = options.verbose
-        
-#
-# MAIN program
-#
-debug = False
-debug = False
-
-cpu = cpu(memsize, memtrace, regtrace, cctrace, options.solve, verbose)
-
-# load a program
-cpu.load(progfile, loadaddr)
-
-# process list
-procs = proclist()
-pid   = 0
-stack = memsize * 1000
-for t in range(numthreads):
-    if len(argv) > 1:
-        arg = argv[pid]
+if __name__ == '__main__':
+    cookieinfo = {}
+    loginway = str(input('输入0为Cookie登录,输入其他为手机号+密码登录:'))
+    #登录方式一:需要自行修改tel(注册电话号码)与pwd(对应加密后的密码)字段的值
+    if(loginway != "0"):
+        #声明：这种登录方法长久有效，账户信息不变时不需要再次修改或更新
+        tel = ""
+        password = ""
+        pwd = RSA_PSW(password)
+        if(pwd != False):
+            cookieStr = login(tel,pwd)
+        else:
+            print('密码加密失败')
+            print('程序已自动切换为Cookie登录')
+            cookieinfo['csrftoken'] = str(input('请输入csrftoken:'))
+            cookieinfo['sessionid'] = str(input('请输入sessionid:'))
+            cookieStr = smlogin(cookieinfo)
+    #登录方式二:(不要修改任何字段的值)
     else:
-        arg = argv[0]
-    procs.add(process(cpu, pid, loadaddr, stack, arg))
-    stack -= 1000
-    pid += 1
-
-# get first one ready!
-procs.restore()
-
-# run it
-t1 = time.clock()
-ic = cpu.run(procs, intfreq, intrand)
-t2 = time.clock()
-
-if printstats:
-    print ''
-    print 'STATS:: Instructions    %d' % ic
-    print 'STATS:: Emulation Rate  %.2f kinst/sec' % (float(ic) / float(t2 - t1) / 1000.0)
-
-# use this for profiling
-# import cProfile
-# cProfile.run('run()')
-
-
-
-
+        #声明：这种登录方法有时效性，需要及时更新cookieinfo['csrftoken']和cookieinfo['sessionid']的值
+        #如输入:928khBplVlPJTqiKWcYvF4PsS3NjgD4O
+        cookieinfo['csrftoken'] = str(input('请输入csrftoken:'))
+        #如输入:1yjl3t64wefkem71f449s87z94f2a0gx
+        cookieinfo['sessionid'] = str(input('请输入sessionid:'))
+        cookieStr = smlogin(cookieinfo)
+    if(cookieStr == False):
+        print('长江雨课堂登录失败')
+    else:
+        courseinfo = showCourse(cookieStr)
+        if(courseinfo == False):
+            print('获取课程信息失败')
+        else:
+            courselist = getCourse(courseinfo)
+            if(courselist == False):
+                print('提取课程关键要素失败')
+            else:
+                mkdir(".\\我的课程信息\\")
+                haveWrite, courseaddr, coursename = writeCourseInfo(courselist,'我的课程信息/courseInfo.csv')
+                if(haveWrite == False):
+                    print('课程信息写入文件' + courseaddr + '失败')
+                else:
+                    print('恭喜课程信息写入成功')
+                    course_dicts = {}
+                    for course in courselist:
+                         course_dicts[course[1].replace(',','')] = course[0].replace(',','')
+                    for i in range(len(coursename)):
+                        print(str(i + 1),coursename[str(i + 1)])
+                    courseQuery = str(input("请输入上述课程名对应的序号:"))
+                    haveQuery, course_id, classroom_id = readCourseInfo(courseQuery,'我的课程信息/courseInfo.csv')
+                    try:
+                        dirName = course_dicts[course_id]
+                        mkdir('.\\我的课程信息\\' + dirName + '\\')
+                    except:
+                        print('课程名与课程ID匹配失败')
+                        haveQuery == False
+                    if(haveQuery == False):
+                        print('课程查询失败')
+                    else:
+                        detailQuery = getDetailQuery(cookieStr,course_id,classroom_id)
+                        if(detailQuery == False):
+                            print('获取所查询课程详细信息失败')
+                        else:
+                            examlist = getExam(detailQuery)
+                            if(examlist == False):
+                                print('考试信息获取失败')
+                            else:
+                                for i in range(len(examlist)):
+                                    try:
+                                        print("{:-<10}----".format(examlist[i][2]),end = "")
+                                        print(examlist[i][0])
+                                    except:
+                                        print('获取第' + str(i+1) + '个考试信息的Id失败')
+                                        continue
+                                examquery = str(input("请输入上述查询的考试号:"))
+                                exam_dicts = {}
+                                for exam in examlist:
+                                    exam_dicts[exam[2].replace(',','')] = exam[0].replace(',','')   
+                                try:
+                                    mkdir('.\\我的课程信息\\' + dirName + '\\' + exam_dicts[examquery] + '\\')
+                                    rawaddr = '我的课程信息/' + dirName + '/' + exam_dicts[examquery] + '/' + 'rawQuiz-' + examquery + '.txt'
+                                    haveHtml = getHtml(cookieStr,examquery,rawaddr)
+                                except:
+                                    haveHtml = False
+                                if(haveHtml == False):
+                                    print('获取所要查询试卷加密的题目信息失败')
+                                else:
+                                    dataaddr = '我的课程信息/' + dirName + '/' + exam_dicts[examquery] + '/' + 'data-' + examquery + '.txt'
+                                    haveSecret = getSecret(rawaddr,dataaddr)
+                                    if(haveSecret == False):
+                                        print('获取加密字段失败')
+                                    else:
+                                        rawCode = readCode(dataaddr)
+                                        if(rawCode == False):
+                                            print('读取加密文件失败')
+                                        else:
+                                            deCode = base64Decode(rawCode)
+                                            if(deCode == False):
+                                                print('base64解密失败')
+                                            else:
+                                                writeUrl = '我的课程信息/' + dirName + '/' + exam_dicts[examquery] + '/' + 'decodeText-' + examquery + '.txt'
+                                                print(writeText(writeUrl,deCode))
+                                                mkdir('.\\我的课程信息\\' + dirName + '/' + exam_dicts[examquery] + '\\图片(含答案)\\')
+                                                haveImg = getImgUrl(writeUrl,'我的课程信息/' + dirName + '/' + exam_dicts[examquery] + '/图片(含答案)/')
+                                            
