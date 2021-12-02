@@ -380,8 +380,8 @@ if __name__ == '__main__':
     #登录方式一:需要自行修改tel(注册电话号码)与pwd(对应加密后的密码)字段的值
     if(loginway != "0"):
         #声明：这种登录方法长久有效，账户信息不变时不需要再次修改或更新
-        tel = ""
-        password = ""
+        tel = "18361406837"
+        password = "Lazy574839"
         pwd = RSA_PSW(password)
         if(pwd != False):
             cookieStr = login(tel,pwd)
