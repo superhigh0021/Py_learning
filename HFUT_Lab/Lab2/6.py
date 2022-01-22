@@ -1,13 +1,8 @@
-fp=open('eng_text.txt','r+')
+fp=open(input(''),'r+')
 str=fp.read()
 print(str)
 new_str=''
-for item in str:
-    if item.islower():
-        item=item.upper()
-    elif item.isupper():
-        item=item.lower()
-    new_str+=item
+new_str=str.swapcase()
 print()
 print(new_str)
 fp.write(new_str)
