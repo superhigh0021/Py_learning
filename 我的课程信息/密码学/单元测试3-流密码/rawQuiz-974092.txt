@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="stylesheet" type="text/css" href="/static/css/quiz_info.1dad6ebe25f0.css">
+    <link type="image/x-icon" rel="shortcut icon" href="/static/images/favicon.ico">
+    <script src="/static/js/libs/jquery-1.6.min.70eb19bea754.js"></script>
+	<title>单元测试3-流密码</title>
+	<script type="text/javascript">
+    var user_id = 29049873;
+    var quizID = 974092;
+    var quizData = "eyJMYW5ndWFnZSI6ICJ6aC1DTiIsICJUaXRsZSI6ICJcdTUzNTVcdTUxNDNcdTZkNGJcdThiZDUzLVx1NmQ0MVx1NWJjNlx1NzgwMSIsICJIYXNDYWNoZSI6IGZhbHNlLCAiSGVpZ2h0IjogNzIwLjAsICJTbGlkZXMiOiBbeyJTaGFwZXMiOiBbeyJTaGFwZVR5cGUiOiAxNywgIlVSTCI6ICJodHRwczovL3FuLXN0MC55dWtldGFuZy5jbi9GcGVGcWk5clFsTlA2cWxzZXNRcS11X3VRYm9JIiwgIlRvcCI6IDAuMCwgIkhlaWdodCI6IDM4LjQsICJXaWR0aCI6IDI4NC4xNSwgIlpPcmRlclBvc2l0aW9uIjogMSwgIkxpbmUiOiB7IkRhc2hTdHlsZSI6ICJtc29MaW5lU29saWQiLCAiVmlzYmxlIjogZmFsc2UsICJXZWlnaHQiOiAxLjAsICJCYWNrQ29sb3IiOiAiIzAwMDAwMCJ9LCAiRmlsbCI6IHsiVmlzYmxlIjogZmFsc2UsICJUcmFuc3BhcmVuY3kiOiAwLjAsICJCYWNrQ29sb3IiOiAiI0ZGRkZGRiJ9LCAiVHlwZSI6ICJtc29UZXh0Qm94IiwgIlJvdGF0aW9uIjogMC4wLCAiSUQiOiAzLCAiTGVmdCI6IDAuMH1dfSwgeyJTaGFwZXMiOiBbeyJTaGFwZVR5cGUiOiAxNywgIlVSTCI6ICJodHRwczovL3FuLXN0MC55dWtldGFuZy5jbi9GaXE0S3RmT0oxTDdBSWl1UkNLMTd0bk1EQWxJIiwgIlRvcCI6IDE0My4zLCAiSGVpZ2h0IjogMzguNCwgIldpZHRoIjogMzUzLjAyNTAyNCwgIlpPcmRlclBvc2l0aW9uIjogMSwgIkxpbmUiOiB7IkRhc2hTdHlsZSI6ICJtc29MaW5lU29saWQiLCAiVmlzYmxlIjogZmFsc2UsICJXZWlnaHQiOiAxLjAsICJCYWNrQ29sb3IiOiAiIzAwMDAwMCJ9LCAiRmlsbCI6IHsiVmlzYmxlIjogZmFsc2UsICJUcmFuc3BhcmVuY3kiOiAwLjAsICJCYWNrQ29sb3IiOiAiI0ZGRkZGRiJ9LCAiVHlwZSI6ICJtc29UZXh0Qm94IiwgIlJvdGF0aW9uIjogMC4wLCAiSUQiOiA5LCAiTGVmdCI6IDQ1LjB9LCB7IlNoYXBlVHlwZSI6IDE3LCAiVVJMIjogImh0dHBzOi8vcW4tc3QwLnl1a2V0YW5nLmNuL0ZsU3BLSWZSMzltZE5WXzVSSkJHbzlvLUwzNmUiLCAiVG9wIjogMzA3LjA1LCAiSGVpZ2h0IjogMzguNCwgIldpZHRoIjogMjMwLjE1LCAiWk9yZGVyUG9zaXRpb24iOiAyLCAiTGluZSI6IHsiRGFzaFN0eWxlIjogIm1zb0xpbmVTb2xpZCIsICJWaXNibGUiOiBmYWxzZSwgIldlaWdodCI6IDEuMCwgIkJhY2tDb2xvciI6ICIjMDAwMDAwIn0sICJGaWxsIjogeyJWaXNibGUiOiBmYWxzZSwgIlRyYW5zcGFyZW5jeSI6IDAuMCwgIkJhY2tDb2xvciI6ICIjRkZGRkZGIn0sICJUeXBlIjogIm1zb1RleHRCb3giLCAiUm90YXRpb24iOiAwLjAsICJJRCI6IDEwLCAiTGVmdCI6IDkwLjB9LCB7IlNoYXBlVHlwZSI6IDE3LCAiVVJMIjogImh0dHBzOi8vcW4tc3QwLnl1a2V0YW5nLmNuL0ZqdHJQV05jWEZxc2pMTVVRME4xeG1oUFUtaVMiLCAiVG9wIjogMzk3LjA1LCAiSGVpZ2h0IjogMzguNCwgIldpZHRoIjogMzA4LjE1LCAiWk9yZGVyUG9zaXRpb24iOiA0LCAiTGluZSI6IHsiRGFzaFN0eWxlIjogIm1zb0xpbmVTb2xpZCIsICJWaXNibGUiOiBmYWxzZSwgIldlaWdodCI6IDEuMCwgIkJhY2tDb2xvciI6ICIjMDAwMDAwIn0sICJGaWxsIjogeyJWaXNibGUiOiBmYWxzZSwgIlRyYW5zcGFyZW5jeSI6IDAuMCwgIkJhY2tDb2xvciI6ICIjRkZGRkZGIn0sICJUeXBlIjogIm1zb1RleHRCb3giLCAiUm90YXRpb24iOiAwLjAsICJJRCI6IDEyLCAiTGVmdCI6IDkwLjB9LCB7IlNoYXBlVHlwZSI6IDE3LCAiVVJMIjogImh0dHBzOi8vcW4tc3QwLnl1a2V0YW5nLmNuL0ZnRFRxTEJTanQ2ZXM0VE1HZmUzM1JPLUZHMVYiLCAiVG9wIjogNDcyLjUsICJIZWlnaHQiOiA2NS40MzI4NCwgIldpZHRoIjogMjg4LjksICJaT3JkZXJQb3NpdGlvbiI6IDYsICJMaW5lIjogeyJEYXNoU3R5bGUiOiAibXNvTGluZVNvbGlkIiwgIlZpc2JsZSI6IGZhbHNlLCAiV2VpZ2h0IjogMS4wLCAiQmFja0NvbG9yIjogIiMwMDAwMDAifSwgIkZpbGwiOiB7IlZpc2JsZSI6IGZhbHNlLCAiVHJhbnNwYXJlbmN5IjogMC4wLCAiQmFja0NvbG9yIjogIiNGRkZGRkYifSwgIlR5cGUiOiAibXNvVGV4dEJveCIsICJSb3RhdGlvbiI6IDAuMCwgIklEIjogMTQsICJMZWZ0IjogOTAuMH0sIHsiU2hhcGVUeXBlIjogMTcsICJVUkwiOiAiaHR0cHM6Ly9xbi1zdDAueXVrZXRhbmcuY24vRnVkeUxsTzYtXzNjVjBocEFGdGpBdmJsc09HaCIsICJUb3AiOiA1NzguNjgwMDU0LCAiSGVpZ2h0IjogMzUuMTM5ODQzLCAiV2lkdGgiOiAyODguMjc1MDI0LCAiWk9yZGVyUG9zaXRpb24iOiA4LCAiTGluZSI6IHsiRGFzaFN0eWxlIjogIm1zb0xpbmVTb2xpZCIsICJWaXNibGUiOiBmYWxzZSwgIldlaWdodCI6IDEuMCwgIkJhY2tDb2xvciI6ICIjMDAwMDAwIn0sICJGaWxsIjogeyJWaXNibGUiOiBmYWxzZSwgIlRyYW5zcGFyZW5jeSI6IDAuMCwgIkJhY2tDb2xvciI6ICIjRkZGRkZGIn0sICJUeXBlIjogIm1zb1RleHRCb3giLCAiUm90YXRpb24iOiAwLjAsICJJRCI6IDE2LCAiTGVmdCI6IDkwLjB9XSwgIlByb2JsZW0iOiB7IlNjb3JlIjogMi4wLCAiSGFzQ2FjaGUiOiBmYWxzZSwgIkZpbmlzaGVkIjogZmFsc2UsICJEZWZhdWx0U2NvcmUiOiAxLjAsICJCdWxsZXRzIjogW3siV2lkdGgiOiA0My4yLCAiVG9wIjogMzA0LjY1LCAiTGVmdCI6IDQyLjQ4LCAiSGVpZ2h0IjogNDMuMiwgIkxhYmVsIjogIkEifSwgeyJXaWR0aCI6IDQzLjIsICJUb3AiOiAzOTQuNjUsICJMZWZ0IjogNDIuNDgsICJIZWlnaHQiOiA0My4yLCAiTGFiZWwiOiAiQiJ9LCB7IldpZHRoIjogNDMuMiwgIlRvcCI6IDQ4NC42NSwgIkxlZnQiOiA0Mi40OCwgIkhlaWdodCI6IDQzLjIsICJMYWJlbCI6ICJDIn0sIHsiV2lkdGgiOiA0My4yLCAiVG9wIjogNTc0LjY1LCAiTGVmdCI6IDQyLjQ4LCAiSGVpZ2h0IjogNDMuMiwgIkxhYmVsIjogIkQifV0sICJIYXNSZW1hcmsiOiBmYWxzZSwgIlByb2JsZW1JRCI6IDIwMjU3NTczLCAiVHlwZSI6ICJNdWx0aXBsZUNob2ljZSJ9fSwgeyJTaGFwZXMiOiBbeyJTaGFwZVR5cGUiOiAxNywgIlVSTCI6ICJodHRwczovL3FuLXN0MC55dWtldGFuZy5jbi9GdHZaM2RtVnZ3QXpXcWRxZUNuZzZwcDh4RTdtIiwgIlRvcCI6IDgyLjUyNjYxLCAiSGVpZ2h0IjogMTU5Ljk0Njg1NCwgIldpZHRoIjogMzU3LjUyNTAyNCwgIlpPcmRlclBvc2l0aW9uIjogMSwgIkxpbmUiOiB7IkRhc2hTdHlsZSI6ICJtc29MaW5lU29saWQiLCAiVmlzYmxlIjogZmFsc2UsICJXZWlnaHQiOiAxLjAsICJCYWNrQ29sb3IiOiAiIzAwMDAwMCJ9LCAiRmlsbCI6IHsiVmlzYmxlIjogZmFsc2UsICJUcmFuc3BhcmVuY3kiOiAwLjAsICJCYWNrQ29sb3IiOiAiI0ZGRkZGRiJ9LCAiVHlwZSI6ICJtc29UZXh0Qm94IiwgIlJvdGF0aW9uIjogMC4wLCAiSUQiOiA5LCAiTGVmdCI6IDQ1LjB9LCB7IlNoYXBlVHlwZSI6IDE3LCAiVVJMIjogImh0dHBzOi8vcW4tc3QwLnl1a2V0YW5nLmNuL0Z2dXZFbEh1Tzl6dmNGSmR0a2lodjVweldzMW4iLCAiVG9wIjogMzA3LjA1LCAiSGVpZ2h0IjogMzguNCwgIldpZHRoIjogMzcuNCwgIlpPcmRlclBvc2l0aW9uIjogMiwgIkxpbmUiOiB7IkRhc2hTdHlsZSI6ICJtc29MaW5lU29saWQiLCAiVmlzYmxlIjogZmFsc2UsICJXZWlnaHQiOiAxLjAsICJCYWNrQ29sb3IiOiAiIzAwMDAwMCJ9LCAiRmlsbCI6IHsiVmlzYmxlIjogZmFsc2UsICJUcmFuc3BhcmVuY3kiOiAwLjAsICJCYWNrQ29sb3IiOiAiI0ZGRkZGRiJ9LCAiVHlwZSI6ICJtc29UZXh0Qm94IiwgIlJvdGF0aW9uIjogMC4wLCAiSUQiOiAxMCwgIkxlZnQiOiA5MC4wfSwgeyJTaGFwZVR5cGUiOiAxNywgIlVSTCI6ICJodHRwczovL3FuLXN0MC55dWtldGFuZy5jbi9GcmU3MnRwY24tRFlucFFqT3RTTGx6bE5GTnRyIiwgIlRvcCI6IDM5Ny4wNSwgIkhlaWdodCI6IDM4LjQsICJXaWR0aCI6IDM3LjQsICJaT3JkZXJQb3NpdGlvbiI6IDQsICJMaW5lIjogeyJEYXNoU3R5bGUiOiAibXNvTGluZVNvbGlkIiwgIlZpc2JsZSI6IGZhbHNlLCAiV2VpZ2h0IjogMS4wLCAiQmFja0NvbG9yIjogIiMwMDAwMDAifSwgIkZpbGwiOiB7IlZpc2JsZSI6IGZhbHNlLCAiVHJhbnNwYXJlbmN5IjogMC4wLCAiQmFja0NvbG9yIjogIiNGRkZGRkYifSwgIlR5cGUiOiAibXNvVGV4dEJveCIsICJSb3RhdGlvbiI6IDAuMCwgIklEIjogMTIsICJMZWZ0IjogOTAuMH0sIHsiU2hhcGVUeXBlIjogMTcsICJVUkwiOiAiaHR0cHM6Ly9xbi1zdDAueXVrZXRhbmcuY24vRm8zX1kyRnNEQVl4T1VObmMyb2xMTXhETjVhSCIsICJUb3AiOiA0ODcuMDUsICJIZWlnaHQiOiAzOC40LCAiV2lkdGgiOiAzNy40LCAiWk9yZGVyUG9zaXRpb24iOiA2LCAiTGluZSI6IHsiRGFzaFN0eWxlIjogIm1zb0xpbmVTb2xpZCIsICJWaXNibGUiOiBmYWxzZSwgIldlaWdodCI6IDEuMCwgIkJhY2tDb2xvciI6ICIjMDAwMDAwIn0sICJGaWxsIjogeyJWaXNibGUiOiBmYWxzZSwgIlRyYW5zcGFyZW5jeSI6IDAuMCwgIkJhY2tDb2xvciI6ICIjRkZGRkZGIn0sICJUeXBlIjogIm1zb1RleHRCb3giLCAiUm90YXRpb24iOiAwLjAsICJJRCI6IDE0LCAiTGVmdCI6IDkwLjB9LCB7IlNoYXBlVHlwZSI6IDE3LCAiVVJMIjogImh0dHBzOi8vcW4tc3QwLnl1a2V0YW5nLmNuL0ZycE9QcXJMTU1BZzdNdF9ab181Q19mYmlKNkoiLCAiVG9wIjogNTc3LjA1LCAiSGVpZ2h0IjogMzguNCwgIldpZHRoIjogMzcuNCwgIlpPcmRlclBvc2l0aW9uIjogOCwgIkxpbmUiOiB7IkRhc2hTdHlsZSI6ICJtc29MaW5lU29saWQiLCAiVmlzYmxlIjogZmFsc2UsICJXZWlnaHQiOiAxLjAsICJCYWNrQ29sb3IiOiAiIzAwMDAwMCJ9LCAiRmlsbCI6IHsiVmlzYmxlIjogZmFsc2UsICJUcmFuc3BhcmVuY3kiOiAwLjAsICJCYWNrQ29sb3IiOiAiI0ZGRkZGRiJ9LCAiVHlwZSI6ICJtc29UZXh0Qm94IiwgIlJvdGF0aW9uIjogMC4wLCAiSUQiOiAxNiwgIkxlZnQiOiA5MC4wfV0sICJQcm9ibGVtIjogeyJTY29yZSI6IDIuMCwgIkhhc0NhY2hlIjogZmFsc2UsICJGaW5pc2hlZCI6IGZhbHNlLCAiRGVmYXVsdFNjb3JlIjogMS4wLCAiQnVsbGV0cyI6IFt7IldpZHRoIjogNDMuMiwgIlRvcCI6IDMwNC42NSwgIkxlZnQiOiA0Mi40OCwgIkhlaWdodCI6IDQzLjIsICJMYWJlbCI6ICJBIn0sIHsiV2lkdGgiOiA0My4yLCAiVG9wIjogMzk0LjY1LCAiTGVmdCI6IDQyLjQ4LCAiSGVpZ2h0IjogNDMuMiwgIkxhYmVsIjogIkIifSwgeyJXaWR0aCI6IDQzLjIsICJUb3AiOiA0ODQuNjUsICJMZWZ0IjogNDIuNDgsICJIZWlnaHQiOiA0My4yLCAiTGFiZWwiOiAiQyJ9LCB7IldpZHRoIjogNDMuMiwgIlRvcCI6IDU3NC42NSwgIkxlZnQiOiA0Mi40OCwgIkhlaWdodCI6IDQzLjIsICJMYWJlbCI6ICJEIn1dLCAiSGFzUmVtYXJrIjogZmFsc2UsICJQcm9ibGVtSUQiOiAyMDI1NzU3NCwgIlR5cGUiOiAiTXVsdGlwbGVDaG9pY2UifX0sIHsiU2hhcGVzIjogW3siU2hhcGVUeXBlIjogMTcsICJVUkwiOiAiaHR0cHM6Ly9xbi1zdDAueXVrZXRhbmcuY24vRnR6UWZ5bDRnbkdkak5GT1RxNlJrZGszb2UzRyIsICJUb3AiOiAxNDMuMywgIkhlaWdodCI6IDM4LjQsICJXaWR0aCI6IDMwNy42MywgIlpPcmRlclBvc2l0aW9uIjogMSwgIkxpbmUiOiB7IkRhc2hTdHlsZSI6ICJtc29MaW5lU29saWQiLCAiVmlzYmxlIjogZmFsc2UsICJXZWlnaHQiOiAxLjAsICJCYWNrQ29sb3IiOiAiIzAwMDAwMCJ9LCAiRmlsbCI6IHsiVmlzYmxlIjogZmFsc2UsICJUcmFuc3BhcmVuY3kiOiAwLjAsICJCYWNrQ29sb3IiOiAiI0ZGRkZGRiJ9LCAiVHlwZSI6ICJtc29UZXh0Qm94IiwgIlJvdGF0aW9uIjogMC4wLCAiSUQiOiA5LCAiTGVmdCI6IDQ1LjB9LCB7IlNoYXBlVHlwZSI6IDE3LCAiVVJMIjogImh0dHBzOi8vcW4tc3QwLnl1a2V0YW5nLmNuL0ZwaWlBRXVUUTZPbnc4RWVraFB2ajc1b29ISEMiLCAiVG9wIjogMzA3LjA1LCAiSGVpZ2h0IjogMzguNCwgIldpZHRoIjogMTUyLjE1LCAiWk9yZGVyUG9zaXRpb24iOiAyLCAiTGluZSI6IHsiRGFzaFN0eWxlIjogIm1zb0xpbmVTb2xpZCIsICJWaXNibGUiOiBmYWxzZSwgIldlaWdodCI6IDEuMCwgIkJhY2tDb2xvciI6ICIjMDAwMDAwIn0sICJGaWxsIjogeyJWaXNibGUiOiBmYWxzZSwgIlRyYW5zcGFyZW5jeSI6IDAuMCwgIkJhY2tDb2xvciI6ICIjRkZGRkZGIn0sICJUeXBlIjogIm1zb1RleHRCb3giLCAiUm90YXRpb24iOiAwLjAsICJJRCI6IDEwLCAiTGVmdCI6IDkwLjB9LCB7IlNoYXBlVHlwZSI6IDE3LCAiVVJMIjogImh0dHBzOi8vcW4tc3QwLnl1a2V0YW5nLmNuL0ZxSnc4UjZkbTYzS29wdlhBZUl0OENDMDRqWXAiLCAiVG9wIjogMzk3LjA1LCAiSGVpZ2h0IjogMzguNCwgIldpZHRoIjogMTc4LjE1LCAiWk9yZGVyUG9zaXRpb24iOiA0LCAiTGluZSI6IHsiRGFzaFN0eWxlIjogIm1zb0xpbmVTb2xpZCIsICJWaXNibGUiOiBmYWxzZSwgIldlaWdodCI6IDEuMCwgIkJhY2tDb2xvciI6ICIjMDAwMDAwIn0sICJGaWxsIjogeyJWaXNibGUiOiBmYWxzZSwgIlRyYW5zcGFyZW5jeSI6IDAuMCwgIkJhY2tDb2xvciI6ICIjRkZGRkZGIn0sICJUeXBlIjogIm1zb1RleHRCb3giLCAiUm90YXRpb24iOiAwLjAsICJJRCI6IDEyLCAiTGVmdCI6IDkwLjB9LCB7IlNoYXBlVHlwZSI6IDE3LCAiVVJMIjogImh0dHBzOi8vcW4tc3QwLnl1a2V0YW5nLmNuL0ZvSC1tYlhCRXlzd2xZYXFYaENjQkRDV2VqblgiLCAiVG9wIjogNDg3LjA1LCAiSGVpZ2h0IjogMzguNCwgIldpZHRoIjogMjA0LjE1LCAiWk9yZGVyUG9zaXRpb24iOiA2LCAiTGluZSI6IHsiRGFzaFN0eWxlIjogIm1zb0xpbmVTb2xpZCIsICJWaXNibGUiOiBmYWxzZSwgIldlaWdodCI6IDEuMCwgIkJhY2tDb2xvciI6ICIjMDAwMDAwIn0sICJGaWxsIjogeyJWaXNibGUiOiBmYWxzZSwgIlRyYW5zcGFyZW5jeSI6IDAuMCwgIkJhY2tDb2xvciI6ICIjRkZGRkZGIn0sICJUeXBlIjogIm1zb1RleHRCb3giLCAiUm90YXRpb24iOiAwLjAsICJJRCI6IDE0LCAiTGVmdCI6IDkwLjB9LCB7IlNoYXBlVHlwZSI6IDE3LCAiVVJMIjogImh0dHBzOi8vcW4tc3QwLnl1a2V0YW5nLmNuL0Zncm1kOXBHUmNTcVNtT2NjOWVzd2FmRVVIX2kiLCAiVG9wIjogNTYyLjUsICJIZWlnaHQiOiA2NS40MzI4NCwgIldpZHRoIjogMjkwLjQsICJaT3JkZXJQb3NpdGlvbiI6IDgsICJMaW5lIjogeyJEYXNoU3R5bGUiOiAibXNvTGluZVNvbGlkIiwgIlZpc2JsZSI6IGZhbHNlLCAiV2VpZ2h0IjogMS4wLCAiQmFja0NvbG9yIjogIiMwMDAwMDAifSwgIkZpbGwiOiB7IlZpc2JsZSI6IGZhbHNlLCAiVHJhbnNwYXJlbmN5IjogMC4wLCAiQmFja0NvbG9yIjogIiNGRkZGRkYifSwgIlR5cGUiOiAibXNvVGV4dEJveCIsICJSb3RhdGlvbiI6IDAuMCwgIklEIjogMTYsICJMZWZ0IjogOTAuMH1dLCAiUHJvYmxlbSI6IHsiU2NvcmUiOiAyLjAsICJIYXNDYWNoZSI6IGZhbHNlLCAiRmluaXNoZWQiOiBmYWxzZSwgIkRlZmF1bHRTY29yZSI6IDEuMCwgIkJ1bGxldHMiOiBbeyJXaWR0aCI6IDQzLjIsICJUb3AiOiAzMDQuNjUsICJMZWZ0IjogNDIuNDgsICJIZWlnaHQiOiA0My4yLCAiTGFiZWwiOiAiQSJ9LCB7IldpZHRoIjogNDMuMiwgIlRvcCI6IDM5NC42NSwgIkxlZnQiOiA0Mi40OCwgIkhlaWdodCI6IDQzLjIsICJMYWJlbCI6ICJCIn0sIHsiV2lkdGgiOiA0My4yLCAiVG9wIjogNDg0LjY1LCAiTGVmdCI6IDQyLjQ4LCAiSGVpZ2h0IjogNDMuMiwgIkxhYmVsIjogIkMifSwgeyJXaWR0aCI6IDQzLjIsICJUb3AiOiA1NzQuNjUsICJMZWZ0IjogNDIuNDgsICJIZWlnaHQiOiA0My4yLCAiTGFiZWwiOiAiRCJ9XSwgIkhhc1JlbWFyayI6IGZhbHNlLCAiUHJvYmxlbUlEIjogMjAyNTc1NzUsICJUeXBlIjogIk11bHRpcGxlQ2hvaWNlIn19LCB7IlNoYXBlcyI6IFt7IlNoYXBlVHlwZSI6IDE3LCAiVVJMIjogImh0dHBzOi8vcW4tc3QwLnl1a2V0YW5nLmNuL0ZrdXFBZG82SlpNT2JtU0RDV2lDRUxVTjJ0bFYiLCAiVG9wIjogMTI3LjcsICJIZWlnaHQiOiA2OS42LCAiV2lkdGgiOiAzNTEuOSwgIlpPcmRlclBvc2l0aW9uIjogMSwgIkxpbmUiOiB7IkRhc2hTdHlsZSI6ICJtc29MaW5lU29saWQiLCAiVmlzYmxlIjogZmFsc2UsICJXZWlnaHQiOiAxLjAsICJCYWNrQ29sb3IiOiAiIzAwMDAwMCJ9LCAiRmlsbCI6IHsiVmlzYmxlIjogZmFsc2UsICJUcmFuc3BhcmVuY3kiOiAwLjAsICJCYWNrQ29sb3IiOiAiI0ZGRkZGRiJ9LCAiVHlwZSI6ICJtc29UZXh0Qm94IiwgIlJvdGF0aW9uIjogMC4wLCAiSUQiOiA5LCAiTGVmdCI6IDQ1LjB9LCB7IlNoYXBlVHlwZSI6IDE3LCAiVVJMIjogImh0dHBzOi8vcW4tc3QwLnl1a2V0YW5nLmNuL0ZtWkgwc3lkVFh6SHlRVTNoRFZIemh1QmVpQ1YiLCAiVG9wIjogMjkyLjUsICJIZWlnaHQiOiA2NS40MzI4NCwgIldpZHRoIjogMjkwLjQsICJaT3JkZXJQb3NpdGlvbiI6IDIsICJMaW5lIjogeyJEYXNoU3R5bGUiOiAibXNvTGluZVNvbGlkIiwgIlZpc2JsZSI6IGZhbHNlLCAiV2VpZ2h0IjogMS4wLCAiQmFja0NvbG9yIjogIiMwMDAwMDAifSwgIkZpbGwiOiB7IlZpc2JsZSI6IGZhbHNlLCAiVHJhbnNwYXJlbmN5IjogMC4wLCAiQmFja0NvbG9yIjogIiNGRkZGRkYifSwgIlR5cGUiOiAibXNvVGV4dEJveCIsICJSb3RhdGlvbiI6IDAuMCwgIklEIjogMTAsICJMZWZ0IjogOTAuMH0sIHsiU2hhcGVUeXBlIjogMTcsICJVUkwiOiAiaHR0cHM6Ly9xbi1zdDAueXVrZXRhbmcuY24vRm51czN2MzNQVkJJMjNsYUlIWnRYdWl5eXJueSIsICJUb3AiOiAzOTguNjgwMDg0LCAiSGVpZ2h0IjogMzUuMTM5ODQzLCAiV2lkdGgiOiAyOTcuMTUsICJaT3JkZXJQb3NpdGlvbiI6IDQsICJMaW5lIjogeyJEYXNoU3R5bGUiOiAibXNvTGluZVNvbGlkIiwgIlZpc2JsZSI6IGZhbHNlLCAiV2VpZ2h0IjogMS4wLCAiQmFja0NvbG9yIjogIiMwMDAwMDAifSwgIkZpbGwiOiB7IlZpc2JsZSI6IGZhbHNlLCAiVHJhbnNwYXJlbmN5IjogMC4wLCAiQmFja0NvbG9yIjogIiNGRkZGRkYifSwgIlR5cGUiOiAibXNvVGV4dEJveCIsICJSb3RhdGlvbiI6IDAuMCwgIklEIjogMTIsICJMZWZ0IjogOTAuMH0sIHsiU2hhcGVUeXBlIjogMTcsICJVUkwiOiAiaHR0cHM6Ly9xbi1zdDAueXVrZXRhbmcuY24vRmlET0YwS3RPaXZwd3RBUzMzMHdHWlhMZE5ubCIsICJUb3AiOiA0ODguMDc0MjQ5LCAiSGVpZ2h0IjogMzYuMzUxNTczOSwgIldpZHRoIjogMjk2LjI3NTAyNCwgIlpPcmRlclBvc2l0aW9uIjogNiwgIkxpbmUiOiB7IkRhc2hTdHlsZSI6ICJtc29MaW5lU29saWQiLCAiVmlzYmxlIjogZmFsc2UsICJXZWlnaHQiOiAxLjAsICJCYWNrQ29sb3IiOiAiIzAwMDAwMCJ9LCAiRmlsbCI6IHsiVmlzYmxlIjogZmFsc2UsICJUcmFuc3BhcmVuY3kiOiAwLjAsICJCYWNrQ29sb3IiOiAiI0ZGRkZGRiJ9LCAiVHlwZSI6ICJtc29UZXh0Qm94IiwgIlJvdGF0aW9uIjogMC4wLCAiSUQiOiAxNCwgIkxlZnQiOiA5MC4wfSwgeyJTaGFwZVR5cGUiOiAxNywgIlVSTCI6ICJodHRwczovL3FuLXN0MC55dWtldGFuZy5jbi9GdnRxdFVSNWU3bDgydTBNN1VhNjBNdnN4YVo5IiwgIlRvcCI6IDU3Ny4wNSwgIkhlaWdodCI6IDM4LjQsICJXaWR0aCI6IDMwOC4xNSwgIlpPcmRlclBvc2l0aW9uIjogOCwgIkxpbmUiOiB7IkRhc2hTdHlsZSI6ICJtc29MaW5lU29saWQiLCAiVmlzYmxlIjogZmFsc2UsICJXZWlnaHQiOiAxLjAsICJCYWNrQ29sb3IiOiAiIzAwMDAwMCJ9LCAiRmlsbCI6IHsiVmlzYmxlIjogZmFsc2UsICJUcmFuc3BhcmVuY3kiOiAwLjAsICJCYWNrQ29sb3IiOiAiI0ZGRkZGRiJ9LCAiVHlwZSI6ICJtc29UZXh0Qm94IiwgIlJvdGF0aW9uIjogMC4wLCAiSUQiOiAxNiwgIkxlZnQiOiA5MC4wfV0sICJQcm9ibGVtIjogeyJTY29yZSI6IDIuMCwgIkhhc0NhY2hlIjogZmFsc2UsICJGaW5pc2hlZCI6IGZhbHNlLCAiRGVmYXVsdFNjb3JlIjogMS4wLCAiQnVsbGV0cyI6IFt7IldpZHRoIjogNDMuMiwgIlRvcCI6IDMwNC42NSwgIkxlZnQiOiA0Mi40OCwgIkhlaWdodCI6IDQzLjIsICJMYWJlbCI6ICJBIn0sIHsiV2lkdGgiOiA0My4yLCAiVG9wIjogMzk0LjY1LCAiTGVmdCI6IDQyLjQ4LCAiSGVpZ2h0IjogNDMuMiwgIkxhYmVsIjogIkIifSwgeyJXaWR0aCI6IDQzLjIsICJUb3AiOiA0ODQuNjUsICJMZWZ0IjogNDIuNDgsICJIZWlnaHQiOiA0My4yLCAiTGFiZWwiOiAiQyJ9LCB7IldpZHRoIjogNDMuMiwgIlRvcCI6IDU3NC42NSwgIkxlZnQiOiA0Mi40OCwgIkhlaWdodCI6IDQzLjIsICJMYWJlbCI6ICJEIn1dLCAiSGFzUmVtYXJrIjogZmFsc2UsICJQcm9ibGVtSUQiOiAyMDI1NzU3NiwgIlR5cGUiOiAiTXVsdGlwbGVDaG9pY2UifX0sIHsiU2hhcGVzIjogW3siU2hhcGVUeXBlIjogMTcsICJVUkwiOiAiaHR0cHM6Ly9xbi1zdDAueXVrZXRhbmcuY24vRmdJUE1UVS1veXk2ZzNfc1pHLUZwZ3hwTHJPSSIsICJUb3AiOiAxMjcuNywgIkhlaWdodCI6IDY5LjYsICJXaWR0aCI6IDMzNS45LCAiWk9yZGVyUG9zaXRpb24iOiAxLCAiTGluZSI6IHsiRGFzaFN0eWxlIjogIm1zb0xpbmVTb2xpZCIsICJWaXNibGUiOiBmYWxzZSwgIldlaWdodCI6IDEuMCwgIkJhY2tDb2xvciI6ICIjMDAwMDAwIn0sICJGaWxsIjogeyJWaXNibGUiOiBmYWxzZSwgIlRyYW5zcGFyZW5jeSI6IDAuMCwgIkJhY2tDb2xvciI6ICIjRkZGRkZGIn0sICJUeXBlIjogIm1zb1RleHRCb3giLCAiUm90YXRpb24iOiAwLjAsICJJRCI6IDksICJMZWZ0IjogNDUuMH0sIHsiU2hhcGVUeXBlIjogMTcsICJVUkwiOiAiaHR0cHM6Ly9xbi1zdDAueXVrZXRhbmcuY24vRnZFY19CX3ZHNE5mVnFLenhaay02T0dDcElNMSIsICJUb3AiOiAzMDcuMDUsICJIZWlnaHQiOiAzOC40LCAiV2lkdGgiOiAyNTIuMjgsICJaT3JkZXJQb3NpdGlvbiI6IDIsICJMaW5lIjogeyJEYXNoU3R5bGUiOiAibXNvTGluZVNvbGlkIiwgIlZpc2JsZSI6IGZhbHNlLCAiV2VpZ2h0IjogMS4wLCAiQmFja0NvbG9yIjogIiMwMDAwMDAifSwgIkZpbGwiOiB7IlZpc2JsZSI6IGZhbHNlLCAiVHJhbnNwYXJlbmN5IjogMC4wLCAiQmFja0NvbG9yIjogIiNGRkZGRkYifSwgIlR5cGUiOiAibXNvVGV4dEJveCIsICJSb3RhdGlvbiI6IDAuMCwgIklEIjogMTAsICJMZWZ0IjogOTAuMH0sIHsiU2hhcGVUeXBlIjogMTcsICJVUkwiOiAiaHR0cHM6Ly9xbi1zdDAueXVrZXRhbmcuY24vRnFKTlFoamowRzFnMkUxOU9MSHpDODRFOFhxWiIsICJUb3AiOiAzODIuNSwgIkhlaWdodCI6IDY1LjQzMjg0LCAiV2lkdGgiOiAyNTAuMzI1MDQzLCAiWk9yZGVyUG9zaXRpb24iOiA0LCAiTGluZSI6IHsiRGFzaFN0eWxlIjogIm1zb0xpbmVTb2xpZCIsICJWaXNibGUiOiBmYWxzZSwgIldlaWdodCI6IDEuMCwgIkJhY2tDb2xvciI6ICIjMDAwMDAwIn0sICJGaWxsIjogeyJWaXNibGUiOiBmYWxzZSwgIlRyYW5zcGFyZW5jeSI6IDAuMCwgIkJhY2tDb2xvciI6ICIjRkZGRkZGIn0sICJUeXBlIjogIm1zb1RleHRCb3giLCAiUm90YXRpb24iOiAwLjAsICJJRCI6IDEyLCAiTGVmdCI6IDkwLjB9LCB7IlNoYXBlVHlwZSI6IDE3LCAiVVJMIjogImh0dHBzOi8vcW4tc3QwLnl1a2V0YW5nLmNuL0ZtQkpCVGhOY3N0dmZ0eVNhdXh2TGZPT2FkTE8iLCAiVG9wIjogNDg4LjY4MDA4NCwgIkhlaWdodCI6IDM1LjEzOTg0MywgIldpZHRoIjogMzA5LjAsICJaT3JkZXJQb3NpdGlvbiI6IDYsICJMaW5lIjogeyJEYXNoU3R5bGUiOiAibXNvTGluZVNvbGlkIiwgIlZpc2JsZSI6IGZhbHNlLCAiV2VpZ2h0IjogMS4wLCAiQmFja0NvbG9yIjogIiMwMDAwMDAifSwgIkZpbGwiOiB7IlZpc2JsZSI6IGZhbHNlLCAiVHJhbnNwYXJlbmN5IjogMC4wLCAiQmFja0NvbG9yIjogIiNGRkZGRkYifSwgIlR5cGUiOiAibXNvVGV4dEJveCIsICJSb3RhdGlvbiI6IDAuMCwgIklEIjogMTQsICJMZWZ0IjogOTAuMH0sIHsiU2hhcGVUeXBlIjogMTcsICJVUkwiOiAiaHR0cHM6Ly9xbi1zdDAueXVrZXRhbmcuY24vRmh3Y1lfb1VYSy1OX1BrLTZ0eEdYYU9YVXZXWSIsICJUb3AiOiA1NzguNjgwMDU0LCAiSGVpZ2h0IjogMzUuMTM5ODQzLCAiV2lkdGgiOiAyODkuNTc1MDQzLCAiWk9yZGVyUG9zaXRpb24iOiA4LCAiTGluZSI6IHsiRGFzaFN0eWxlIjogIm1zb0xpbmVTb2xpZCIsICJWaXNibGUiOiBmYWxzZSwgIldlaWdodCI6IDEuMCwgIkJhY2tDb2xvciI6ICIjMDAwMDAwIn0sICJGaWxsIjogeyJWaXNibGUiOiBmYWxzZSwgIlRyYW5zcGFyZW5jeSI6IDAuMCwgIkJhY2tDb2xvciI6ICIjRkZGRkZGIn0sICJUeXBlIjogIm1zb1RleHRCb3giLCAiUm90YXRpb24iOiAwLjAsICJJRCI6IDE2LCAiTGVmdCI6IDkwLjB9XSwgIlByb2JsZW0iOiB7IlNjb3JlIjogMi4wLCAiSGFzQ2FjaGUiOiBmYWxzZSwgIkZpbmlzaGVkIjogZmFsc2UsICJEZWZhdWx0U2NvcmUiOiAxLjAsICJCdWxsZXRzIjogW3siV2lkdGgiOiA0My4yLCAiVG9wIjogMzA0LjY1LCAiTGVmdCI6IDQyLjQ4LCAiSGVpZ2h0IjogNDMuMiwgIkxhYmVsIjogIkEifSwgeyJXaWR0aCI6IDQzLjIsICJUb3AiOiAzOTQuNjUsICJMZWZ0IjogNDIuNDgsICJIZWlnaHQiOiA0My4yLCAiTGFiZWwiOiAiQiJ9LCB7IldpZHRoIjogNDMuMiwgIlRvcCI6IDQ4NC42NSwgIkxlZnQiOiA0Mi40OCwgIkhlaWdodCI6IDQzLjIsICJMYWJlbCI6ICJDIn0sIHsiV2lkdGgiOiA0My4yLCAiVG9wIjogNTc0LjY1LCAiTGVmdCI6IDQyLjQ4LCAiSGVpZ2h0IjogNDMuMiwgIkxhYmVsIjogIkQifV0sICJIYXNSZW1hcmsiOiBmYWxzZSwgIlByb2JsZW1JRCI6IDIwMjU3NTc3LCAiVHlwZSI6ICJNdWx0aXBsZUNob2ljZSJ9fSwgeyJTaGFwZXMiOiBbeyJTaGFwZVR5cGUiOiAxNywgIlVSTCI6ICJodHRwczovL3FuLXN0MC55dWtldGFuZy5jbi9Gb09vazFjd21CbjZlU0FkZTdEdDNRZ3JTZ1FvIiwgIlRvcCI6IDEyNy43LCAiSGVpZ2h0IjogNjkuNiwgIldpZHRoIjogMzQ2LjksICJaT3JkZXJQb3NpdGlvbiI6IDEsICJMaW5lIjogeyJEYXNoU3R5bGUiOiAibXNvTGluZVNvbGlkIiwgIlZpc2JsZSI6IGZhbHNlLCAiV2VpZ2h0IjogMS4wLCAiQmFja0NvbG9yIjogIiMwMDAwMDAifSwgIkZpbGwiOiB7IlZpc2JsZSI6IGZhbHNlLCAiVHJhbnNwYXJlbmN5IjogMC4wLCAiQmFja0NvbG9yIjogIiNGRkZGRkYifSwgIlR5cGUiOiAibXNvVGV4dEJveCIsICJSb3RhdGlvbiI6IDAuMCwgIklEIjogOSwgIkxlZnQiOiA0NS4wfSwgeyJTaGFwZVR5cGUiOiAxNywgIlVSTCI6ICJodHRwczovL3FuLXN0MC55dWtldGFuZy5jbi9GcUUwcUJnV05iZGxlUzM4MmNNcFVEQ01nTWJZIiwgIlRvcCI6IDMwNy4wNSwgIkhlaWdodCI6IDM4LjQsICJXaWR0aCI6IDM3LjQsICJaT3JkZXJQb3NpdGlvbiI6IDIsICJMaW5lIjogeyJEYXNoU3R5bGUiOiAibXNvTGluZVNvbGlkIiwgIlZpc2JsZSI6IGZhbHNlLCAiV2VpZ2h0IjogMS4wLCAiQmFja0NvbG9yIjogIiMwMDAwMDAifSwgIkZpbGwiOiB7IlZpc2JsZSI6IGZhbHNlLCAiVHJhbnNwYXJlbmN5IjogMC4wLCAiQmFja0NvbG9yIjogIiNGRkZGRkYifSwgIlR5cGUiOiAibXNvVGV4dEJveCIsICJSb3RhdGlvbiI6IDAuMCwgIklEIjogMTAsICJMZWZ0IjogOTAuMH0sIHsiU2hhcGVUeXBlIjogMTcsICJVUkwiOiAiaHR0cHM6Ly9xbi1zdDAueXVrZXRhbmcuY24vRmhkN3lzLTFqNkZwTVNmeWtJWFVYdmcyZlBPeCIsICJUb3AiOiAzOTcuMDUsICJIZWlnaHQiOiAzOC40LCAiV2lkdGgiOiA1Mi42NSwgIlpPcmRlclBvc2l0aW9uIjogNCwgIkxpbmUiOiB7IkRhc2hTdHlsZSI6ICJtc29MaW5lU29saWQiLCAiVmlzYmxlIjogZmFsc2UsICJXZWlnaHQiOiAxLjAsICJCYWNrQ29sb3IiOiAiIzAwMDAwMCJ9LCAiRmlsbCI6IHsiVmlzYmxlIjogZmFsc2UsICJUcmFuc3BhcmVuY3kiOiAwLjAsICJCYWNrQ29sb3IiOiAiI0ZGRkZGRiJ9LCAiVHlwZSI6ICJtc29UZXh0Qm94IiwgIlJvdGF0aW9uIjogMC4wLCAiSUQiOiAxMiwgIkxlZnQiOiA5MC4wfSwgeyJTaGFwZVR5cGUiOiAxNywgIlVSTCI6ICJodHRwczovL3FuLXN0MC55dWtldGFuZy5jbi9GbUtNU19kRzNfU1ZJYUo4Y1M2NWhSZzd1bzNmIiwgIlRvcCI6IDQ4Ny4wNSwgIkhlaWdodCI6IDM4LjQsICJXaWR0aCI6IDUyLjY1LCAiWk9yZGVyUG9zaXRpb24iOiA2LCAiTGluZSI6IHsiRGFzaFN0eWxlIjogIm1zb0xpbmVTb2xpZCIsICJWaXNibGUiOiBmYWxzZSwgIldlaWdodCI6IDEuMCwgIkJhY2tDb2xvciI6ICIjMDAwMDAwIn0sICJGaWxsIjogeyJWaXNibGUiOiBmYWxzZSwgIlRyYW5zcGFyZW5jeSI6IDAuMCwgIkJhY2tDb2xvciI6ICIjRkZGRkZGIn0sICJUeXBlIjogIm1zb1RleHRCb3giLCAiUm90YXRpb24iOiAwLjAsICJJRCI6IDE0LCAiTGVmdCI6IDkwLjB9LCB7IlNoYXBlVHlwZSI6IDE3LCAiVVJMIjogImh0dHBzOi8vcW4tc3QwLnl1a2V0YW5nLmNuL0ZvSUVHRy1CWEVLQ3JkUkxlRU5RMXlHcWRxQjkiLCAiVG9wIjogNTc3LjA1LCAiSGVpZ2h0IjogMzguNCwgIldpZHRoIjogNTIuNjUsICJaT3JkZXJQb3NpdGlvbiI6IDgsICJMaW5lIjogeyJEYXNoU3R5bGUiOiAibXNvTGluZVNvbGlkIiwgIlZpc2JsZSI6IGZhbHNlLCAiV2VpZ2h0IjogMS4wLCAiQmFja0NvbG9yIjogIiMwMDAwMDAifSwgIkZpbGwiOiB7IlZpc2JsZSI6IGZhbHNlLCAiVHJhbnNwYXJlbmN5IjogMC4wLCAiQmFja0NvbG9yIjogIiNGRkZGRkYifSwgIlR5cGUiOiAibXNvVGV4dEJveCIsICJSb3RhdGlvbiI6IDAuMCwgIklEIjogMTYsICJMZWZ0IjogOTAuMH1dLCAiUHJvYmxlbSI6IHsiU2NvcmUiOiAyLjAsICJIYXNDYWNoZSI6IGZhbHNlLCAiRmluaXNoZWQiOiBmYWxzZSwgIkRlZmF1bHRTY29yZSI6IDEuMCwgIkJ1bGxldHMiOiBbeyJXaWR0aCI6IDQzLjIsICJUb3AiOiAzMDQuNjUsICJMZWZ0IjogNDIuNDgsICJIZWlnaHQiOiA0My4yLCAiTGFiZWwiOiAiQSJ9LCB7IldpZHRoIjogNDMuMiwgIlRvcCI6IDM5NC42NSwgIkxlZnQiOiA0Mi40OCwgIkhlaWdodCI6IDQzLjIsICJMYWJlbCI6ICJCIn0sIHsiV2lkdGgiOiA0My4yLCAiVG9wIjogNDg0LjY1LCAiTGVmdCI6IDQyLjQ4LCAiSGVpZ2h0IjogNDMuMiwgIkxhYmVsIjogIkMifSwgeyJXaWR0aCI6IDQzLjIsICJUb3AiOiA1NzQuNjUsICJMZWZ0IjogNDIuNDgsICJIZWlnaHQiOiA0My4yLCAiTGFiZWwiOiAiRCJ9XSwgIkhhc1JlbWFyayI6IGZhbHNlLCAiUHJvYmxlbUlEIjogMjAyNTc1NzgsICJUeXBlIjogIk11bHRpcGxlQ2hvaWNlIn19LCB7IlNoYXBlcyI6IFt7IlNoYXBlVHlwZSI6IDE3LCAiVVJMIjogImh0dHBzOi8vcW4tc3QwLnl1a2V0YW5nLmNuL0ZsSEVLa2VYdFlDZXRMVUVsVUg4R1ZiQXpibC0iLCAiVG9wIjogOTYuNSwgIkhlaWdodCI6IDEzMi4wLCAiV2lkdGgiOiAzNDguNjUsICJaT3JkZXJQb3NpdGlvbiI6IDEsICJMaW5lIjogeyJEYXNoU3R5bGUiOiAibXNvTGluZVNvbGlkIiwgIlZpc2JsZSI6IGZhbHNlLCAiV2VpZ2h0IjogMS4wLCAiQmFja0NvbG9yIjogIiMwMDAwMDAifSwgIkZpbGwiOiB7IlZpc2JsZSI6IGZhbHNlLCAiVHJhbnNwYXJlbmN5IjogMC4wLCAiQmFja0NvbG9yIjogIiNGRkZGRkYifSwgIlR5cGUiOiAibXNvVGV4dEJveCIsICJSb3RhdGlvbiI6IDAuMCwgIklEIjogOSwgIkxlZnQiOiA0NS4wfSwgeyJTaGFwZVR5cGUiOiAxNywgIlVSTCI6ICJodHRwczovL3FuLXN0MC55dWtldGFuZy5jbi9GbzNfWTJGc0RBWXhPVU5uYzJvbExNeERONWFIIiwgIlRvcCI6IDMwNy4wNSwgIkhlaWdodCI6IDM4LjQsICJXaWR0aCI6IDM3LjQsICJaT3JkZXJQb3NpdGlvbiI6IDIsICJMaW5lIjogeyJEYXNoU3R5bGUiOiAibXNvTGluZVNvbGlkIiwgIlZpc2JsZSI6IGZhbHNlLCAiV2VpZ2h0IjogMS4wLCAiQmFja0NvbG9yIjogIiMwMDAwMDAifSwgIkZpbGwiOiB7IlZpc2JsZSI6IGZhbHNlLCAiVHJhbnNwYXJlbmN5IjogMC4wLCAiQmFja0NvbG9yIjogIiNGRkZGRkYifSwgIlR5cGUiOiAibXNvVGV4dEJveCIsICJSb3RhdGlvbiI6IDAuMCwgIklEIjogMTAsICJMZWZ0IjogOTAuMH0sIHsiU2hhcGVUeXBlIjogMTcsICJVUkwiOiAiaHR0cHM6Ly9xbi1zdDAueXVrZXRhbmcuY24vRmxaalRQX200OWRvOWg1d1FQSzlOc09fbkJYYiIsICJUb3AiOiAzOTcuMDUsICJIZWlnaHQiOiAzOC40LCAiV2lkdGgiOiAzNy40LCAiWk9yZGVyUG9zaXRpb24iOiA0LCAiTGluZSI6IHsiRGFzaFN0eWxlIjogIm1zb0xpbmVTb2xpZCIsICJWaXNibGUiOiBmYWxzZSwgIldlaWdodCI6IDEuMCwgIkJhY2tDb2xvciI6ICIjMDAwMDAwIn0sICJGaWxsIjogeyJWaXNibGUiOiBmYWxzZSwgIlRyYW5zcGFyZW5jeSI6IDAuMCwgIkJhY2tDb2xvciI6ICIjRkZGRkZGIn0sICJUeXBlIjogIm1zb1RleHRCb3giLCAiUm90YXRpb24iOiAwLjAsICJJRCI6IDEyLCAiTGVmdCI6IDkwLjB9LCB7IlNoYXBlVHlwZSI6IDE3LCAiVVJMIjogImh0dHBzOi8vcW4tc3QwLnl1a2V0YW5nLmNuL0ZnSUZEbHh2bkM2TkVIWkVQNFJ2aC1KTFFiM3AiLCAiVG9wIjogNDg3LjA1LCAiSGVpZ2h0IjogMzguNCwgIldpZHRoIjogMzcuNCwgIlpPcmRlclBvc2l0aW9uIjogNiwgIkxpbmUiOiB7IkRhc2hTdHlsZSI6ICJtc29MaW5lU29saWQiLCAiVmlzYmxlIjogZmFsc2UsICJXZWlnaHQiOiAxLjAsICJCYWNrQ29sb3IiOiAiIzAwMDAwMCJ9LCAiRmlsbCI6IHsiVmlzYmxlIjogZmFsc2UsICJUcmFuc3BhcmVuY3kiOiAwLjAsICJCYWNrQ29sb3IiOiAiI0ZGRkZGRiJ9LCAiVHlwZSI6ICJtc29UZXh0Qm94IiwgIlJvdGF0aW9uIjogMC4wLCAiSUQiOiAxNCwgIkxlZnQiOiA5MC4wfSwgeyJTaGFwZVR5cGUiOiAxNywgIlVSTCI6ICJodHRwczovL3FuLXN0MC55dWtldGFuZy5jbi9GdmdqaENUNWF4SHVKeHNDRHJfaXZDTkZINHgtIiwgIlRvcCI6IDU3Ny4wNSwgIkhlaWdodCI6IDM4LjQsICJXaWR0aCI6IDUyLjY1LCAiWk9yZGVyUG9zaXRpb24iOiA4LCAiTGluZSI6IHsiRGFzaFN0eWxlIjogIm1zb0xpbmVTb2xpZCIsICJWaXNibGUiOiBmYWxzZSwgIldlaWdodCI6IDEuMCwgIkJhY2tDb2xvciI6ICIjMDAwMDAwIn0sICJGaWxsIjogeyJWaXNibGUiOiBmYWxzZSwgIlRyYW5zcGFyZW5jeSI6IDAuMCwgIkJhY2tDb2xvciI6ICIjRkZGRkZGIn0sICJUeXBlIjogIm1zb1RleHRCb3giLCAiUm90YXRpb24iOiAwLjAsICJJRCI6IDE2LCAiTGVmdCI6IDkwLjB9XSwgIlByb2JsZW0iOiB7IlNjb3JlIjogMi4wLCAiSGFzQ2FjaGUiOiBmYWxzZSwgIkZpbmlzaGVkIjogZmFsc2UsICJEZWZhdWx0U2NvcmUiOiAxLjAsICJCdWxsZXRzIjogW3siV2lkdGgiOiA0My4yLCAiVG9wIjogMzA0LjY1LCAiTGVmdCI6IDQyLjQ4LCAiSGVpZ2h0IjogNDMuMiwgIkxhYmVsIjogIkEifSwgeyJXaWR0aCI6IDQzLjIsICJUb3AiOiAzOTQuNjUsICJMZWZ0IjogNDIuNDgsICJIZWlnaHQiOiA0My4yLCAiTGFiZWwiOiAiQiJ9LCB7IldpZHRoIjogNDMuMiwgIlRvcCI6IDQ4NC42NSwgIkxlZnQiOiA0Mi40OCwgIkhlaWdodCI6IDQzLjIsICJMYWJlbCI6ICJDIn0sIHsiV2lkdGgiOiA0My4yLCAiVG9wIjogNTc0LjY1LCAiTGVmdCI6IDQyLjQ4LCAiSGVpZ2h0IjogNDMuMiwgIkxhYmVsIjogIkQifV0sICJIYXNSZW1hcmsiOiBmYWxzZSwgIlByb2JsZW1JRCI6IDIwMjU3NTc5LCAiVHlwZSI6ICJNdWx0aXBsZUNob2ljZSJ9fSwgeyJTaGFwZXMiOiBbeyJTaGFwZVR5cGUiOiAxNywgIlVSTCI6ICJodHRwczovL3FuLXN0MC55dWtldGFuZy5jbi9Gbm1BamtCbTBGVHI3UWw0V3Nfb0FhektsTEtVIiwgIlRvcCI6IDgwLjksICJIZWlnaHQiOiAxNjMuMiwgIldpZHRoIjogMzM0LjE1LCAiWk9yZGVyUG9zaXRpb24iOiAxLCAiTGluZSI6IHsiRGFzaFN0eWxlIjogIm1zb0xpbmVTb2xpZCIsICJWaXNibGUiOiBmYWxzZSwgIldlaWdodCI6IDEuMCwgIkJhY2tDb2xvciI6ICIjMDAwMDAwIn0sICJGaWxsIjogeyJWaXNibGUiOiBmYWxzZSwgIlRyYW5zcGFyZW5jeSI6IDAuMCwgIkJhY2tDb2xvciI6ICIjRkZGRkZGIn0sICJUeXBlIjogIm1zb1RleHRCb3giLCAiUm90YXRpb24iOiAwLjAsICJJRCI6IDksICJMZWZ0IjogNDUuMH0sIHsiU2hhcGVUeXBlIjogMTcsICJVUkwiOiAiaHR0cHM6Ly9xbi1zdDAueXVrZXRhbmcuY24vRnBXbHB4R2pZTWtaR2NjTTlrTE9Ial9fS2RTYyIsICJUb3AiOiAzMDcuMDUsICJIZWlnaHQiOiAzOC40LCAiV2lkdGgiOiAxNDQuMTUsICJaT3JkZXJQb3NpdGlvbiI6IDIsICJMaW5lIjogeyJEYXNoU3R5bGUiOiAibXNvTGluZVNvbGlkIiwgIlZpc2JsZSI6IGZhbHNlLCAiV2VpZ2h0IjogMS4wLCAiQmFja0NvbG9yIjogIiMwMDAwMDAifSwgIkZpbGwiOiB7IlZpc2JsZSI6IGZhbHNlLCAiVHJhbnNwYXJlbmN5IjogMC4wLCAiQmFja0NvbG9yIjogIiNGRkZGRkYifSwgIlR5cGUiOiAibXNvVGV4dEJveCIsICJSb3RhdGlvbiI6IDAuMCwgIklEIjogMTAsICJMZWZ0IjogOTAuMH0sIHsiU2hhcGVUeXBlIjogMTcsICJVUkwiOiAiaHR0cHM6Ly9xbi1zdDAueXVrZXRhbmcuY24vRnM4cDhoSG5KQTBjUEJzRWRMYXBfMExaWnVDWSIsICJUb3AiOiAzOTcuMDUsICJIZWlnaHQiOiAzOC40LCAiV2lkdGgiOiAxNDQuMTUsICJaT3JkZXJQb3NpdGlvbiI6IDQsICJMaW5lIjogeyJEYXNoU3R5bGUiOiAibXNvTGluZVNvbGlkIiwgIlZpc2JsZSI6IGZhbHNlLCAiV2VpZ2h0IjogMS4wLCAiQmFja0NvbG9yIjogIiMwMDAwMDAifSwgIkZpbGwiOiB7IlZpc2JsZSI6IGZhbHNlLCAiVHJhbnNwYXJlbmN5IjogMC4wLCAiQmFja0NvbG9yIjogIiNGRkZGRkYifSwgIlR5cGUiOiAibXNvVGV4dEJveCIsICJSb3RhdGlvbiI6IDAuMCwgIklEIjogMTIsICJMZWZ0IjogOTAuMH0sIHsiU2hhcGVUeXBlIjogMTcsICJVUkwiOiAiaHR0cHM6Ly9xbi1zdDAueXVrZXRhbmcuY24vRmtiQ0I3YkcyUllnbjZkRHdjdzRNS2RsN0hVVSIsICJUb3AiOiA0ODcuMDUsICJIZWlnaHQiOiAzOC40LCAiV2lkdGgiOiAxNDQuMTUsICJaT3JkZXJQb3NpdGlvbiI6IDYsICJMaW5lIjogeyJEYXNoU3R5bGUiOiAibXNvTGluZVNvbGlkIiwgIlZpc2JsZSI6IGZhbHNlLCAiV2VpZ2h0IjogMS4wLCAiQmFja0NvbG9yIjogIiMwMDAwMDAifSwgIkZpbGwiOiB7IlZpc2JsZSI6IGZhbHNlLCAiVHJhbnNwYXJlbmN5IjogMC4wLCAiQmFja0NvbG9yIjogIiNGRkZGRkYifSwgIlR5cGUiOiAibXNvVGV4dEJveCIsICJSb3RhdGlvbiI6IDAuMCwgIklEIjogMTQsICJMZWZ0IjogOTAuMH0sIHsiU2hhcGVUeXBlIjogMTcsICJVUkwiOiAiaHR0cHM6Ly9xbi1zdDAueXVrZXRhbmcuY24vRmc2TXI3ay1Jdk05cWxJWTN1LW5fdExlOEwxTiIsICJUb3AiOiA1NzcuMDUsICJIZWlnaHQiOiAzOC40LCAiV2lkdGgiOiAxNDQuMTUsICJaT3JkZXJQb3NpdGlvbiI6IDgsICJMaW5lIjogeyJEYXNoU3R5bGUiOiAibXNvTGluZVNvbGlkIiwgIlZpc2JsZSI6IGZhbHNlLCAiV2VpZ2h0IjogMS4wLCAiQmFja0NvbG9yIjogIiMwMDAwMDAifSwgIkZpbGwiOiB7IlZpc2JsZSI6IGZhbHNlLCAiVHJhbnNwYXJlbmN5IjogMC4wLCAiQmFja0NvbG9yIjogIiNGRkZGRkYifSwgIlR5cGUiOiAibXNvVGV4dEJveCIsICJSb3RhdGlvbiI6IDAuMCwgIklEIjogMTYsICJMZWZ0IjogOTAuMH1dLCAiUHJvYmxlbSI6IHsiU2NvcmUiOiAyLjAsICJIYXNDYWNoZSI6IGZhbHNlLCAiRmluaXNoZWQiOiBmYWxzZSwgIkRlZmF1bHRTY29yZSI6IDEuMCwgIkJ1bGxldHMiOiBbeyJXaWR0aCI6IDQzLjIsICJUb3AiOiAzMDQuNjUsICJMZWZ0IjogNDIuNDgsICJIZWlnaHQiOiA0My4yLCAiTGFiZWwiOiAiQSJ9LCB7IldpZHRoIjogNDMuMiwgIlRvcCI6IDM5NC42NSwgIkxlZnQiOiA0Mi40OCwgIkhlaWdodCI6IDQzLjIsICJMYWJlbCI6ICJCIn0sIHsiV2lkdGgiOiA0My4yLCAiVG9wIjogNDg0LjY1LCAiTGVmdCI6IDQyLjQ4LCAiSGVpZ2h0IjogNDMuMiwgIkxhYmVsIjogIkMifSwgeyJXaWR0aCI6IDQzLjIsICJUb3AiOiA1NzQuNjUsICJMZWZ0IjogNDIuNDgsICJIZWlnaHQiOiA0My4yLCAiTGFiZWwiOiAiRCJ9XSwgIkhhc1JlbWFyayI6IGZhbHNlLCAiUHJvYmxlbUlEIjogMjAyNTc1ODAsICJUeXBlIjogIk11bHRpcGxlQ2hvaWNlIn19XSwgIldpZHRoIjogNDUwLjAsICJWZXJzaW9uIjogIjEuNiJ9";
+    var quizTimeLimit = 0;
+    var hasStartTimerFlag = "False" == "False" ? false : true;
+    var quizMoreThanDeadline = "False" == "False" ? false : true;
+    var quizMoreThanLimit = "False" == "False" ? false : true;
+    var isAllObjective = 1;
+    var classroomID = 8050886;
+    var isOnLesson = "False" == "False" ? false : true;
+    var J_count = 8;
+    var quizAuth = 0
+
+    var browse_quiz = "False" == 'False' ? false : true;
+    var has_cache = "False" == 'False' ? false : true;
+
+	</script>
+    <script src="//res.wx.qq.com/open/js/jweixin-1.3.2.js"></script>
+</head>
+<body>
+    <div id="confirm_start_limit_quiz_dialog" class="confirm_start_dialog">
+        <h3>
+             
+            提示
+            
+        </h3>
+        <p>
+             考试时间 0 分钟 <br/>
+             点击“开始”后开始计时，开始计<br/>时后再退出，计时仍会继续。
+            
+        </p>
+        <div class="button_group">
+            <div id="J_button1" class="J_button1">
+                 
+                暂不开始
+                
+            </div>
+            <div id="J_button2" class="J_button2"> 
+                
+                开始
+                
+            </div>
+        </div>
+    </div>
+    <div id="collected_bg" class="submit_bg"></div>
+    <!-- toast弹窗 -->
+    <div id="toast" class="toast"></div>
+    <div id="collected_alert" class="submit_alert">
+        <h3>
+            
+            考试时间已到<br>
+            试卷已自动提交
+            
+        </h3>
+        <div class="btn_box">
+            <a class="blue" id="collected_result" href="/v/quiz/quiz_result/974092/">查看结果</a>
+        </div>
+    </div>
+    <!-- 提交失败弹窗 -->
+    <div id="collected_failed_alert" class="submit_failed_alert">
+        <h3>
+            
+            提交失败
+            
+        </h3>
+        <p>
+            
+            网络不佳，部分答案未提交成功
+            
+        </p>
+        <div class="btn_box">
+            <a class="blue" href="/v/quiz/quiz_result/974092/">查看结果</a>
+        </div>
+    </div>
+	<!-- 试题部分的顶部导航、计时、题目横向列表。写最外侧是为了在不同的page切换的时候保持fixed定位 -->
+	<header id="quiz_header" class="quiz_header" style="display:none;">
+		<!-- 导航 -->
+		<div class="nav">
+
+            
+                
+                    
+                    <p class="time J_timeTip"><span>截止时间</span>：2022-03-21 14:15</p>
+                    
+                
+            
+
+            
+            <a href="/v/index/course/normalcourse/manage_classroom///">
+            
+                <!-- <div class="left iconfont icon-back"></div> -->
+            </a>
+
+            <!-- 答题卡入口 -->
+			<div id="open_answersheet_btn" class="right">
+                <p class="quiz-answersheet">答题卡</p>
+              <p class="quiz-count">(<span class="J_answered_count">0</span>/<span class="J_count">8</span>)</p>
+            </div>
+		</div>
+		<!-- 题目序号列表 -->
+		<!-- <div class="bullet_box" id="scroll_container">
+			<ul id="movable_ul" class="clearfix" style="width:2600px;">
+                
+                    <li >
+                        <a data-role="hook" data-href="#answersheet_link1">1</a>
+                    </li>
+                
+                    <li >
+                        <a data-role="hook" data-href="#answersheet_link2">2</a>
+                    </li>
+                
+                    <li >
+                        <a data-role="hook" data-href="#answersheet_link3">3</a>
+                    </li>
+                
+                    <li >
+                        <a data-role="hook" data-href="#answersheet_link4">4</a>
+                    </li>
+                
+                    <li >
+                        <a data-role="hook" data-href="#answersheet_link5">5</a>
+                    </li>
+                
+                    <li >
+                        <a data-role="hook" data-href="#answersheet_link6">6</a>
+                    </li>
+                
+                    <li >
+                        <a data-role="hook" data-href="#answersheet_link7">7</a>
+                    </li>
+                
+                    <li >
+                        <a data-role="hook" data-href="#answersheet_link8">8</a>
+                    </li>
+                
+			</ul>
+		</div> -->
+	</header>
+
+	<!-- 封面 -->
+	<div id="cover" class="cover">
+		<div class="paper_box">
+			<img id="paper" class="paper" src="/static/images/wx_paperstack.png">
+			<div id="avatar_box" class="avatar_box">
+                <img class="avatar" src="http://sfe.ykt.io/o_1bsn23hg89klt0h1lb01p63dd69.jpg">
+                <div class="owner">朱晓玲</div>
+                <div class="course ellipsis-2line">单元测试3-流密码</div>
+                
+                
+                <div class="ddl">截止时间：2022-03-21 14:15</div>
+                
+                
+                    
+                
+			</div>
+		</div>
+        <div id="check_quiz_btn" class="big_bottom_btn">正在加载...</div>
+    </div>
+
+    <div id="quiz_cont" class="quiz_cont" style="display:none;">
+    	<!-- 顶部卸载body子级： #quiz_header -->
+
+    	<!-- 题目部分 -->
+    	<div id="problem_cont" class="problem_cont">
+
+    	</div>
+        
+        <!-- 去交卷 -->
+        <div class="bottom_commit">
+            <p class="end-line"><span>end</span></p>
+            <div id="bottom_commit_btn" class="big_bottom_btn">去交卷</div>
+        </div>
+    </div>
+
+    <div id="answer_sheet" class="answer_sheet" style="display:none;">
+    	<div id="sheet_confirm_bg" class="submit_bg"></div>
+        <div id="sheet_confirm_alert" class="submit_alert">
+            <h3 id="sheet_confirm_title"> 你有题目未完成，<br/>确认交卷吗？</h3>
+            <div class="btn_box">
+                <a id="sheet_confirm_cancel" href="javascript:;">取消</a>
+                <a id="sheet_confirm_confirm" href="javascript:;" class="blue">确认</a>
+            </div>
+        </div>
+
+        <!-- 网络不好提示 -->
+        <div class="quiz__net J_net_tip" style="display:none;">
+            <div class="quiz__net-inner">
+                <img src="/static/images/loading-3.png" alt="">
+                <p class="quiz__net--tip"> 网络不好，正在努力帮您提交建议切换到较好的网络环境 </p>
+            </div>
+        </div>
+
+        <div id="sheet-hint" class="sheet-hint"> 还有 10 道题目未答 </div>
+ 
+    	<div class="bullet_box">
+            <p class="warningWorld">*标<img src="/static/images/uploadStatus.png" alt="">的题目答案未提交成功，正在努力提交ing </p>
+    		<ul id="answer_sheet_ul" class="clearfix pt60">
+                
+                    <li >
+                        <a data-href="#answersheet_link1">1</a>
+                        <span class="wd">未答</span>
+                    </li>
+                
+                    <li >
+                        <a data-href="#answersheet_link2">2</a>
+                        <span class="wd">未答</span>
+                    </li>
+                
+                    <li >
+                        <a data-href="#answersheet_link3">3</a>
+                        <span class="wd">未答</span>
+                    </li>
+                
+                    <li >
+                        <a data-href="#answersheet_link4">4</a>
+                        <span class="wd">未答</span>
+                    </li>
+                
+                    <li >
+                        <a data-href="#answersheet_link5">5</a>
+                        <span class="wd">未答</span>
+                    </li>
+                
+                    <li >
+                        <a data-href="#answersheet_link6">6</a>
+                        <span class="wd">未答</span>
+                    </li>
+                
+                    <li >
+                        <a data-href="#answersheet_link7">7</a>
+                        <span class="wd">未答</span>
+                    </li>
+                
+                    <li >
+                        <a data-href="#answersheet_link8">8</a>
+                        <span class="wd">未答</span>
+                    </li>
+                
+    		</ul>
+    	</div>
+        
+            <!-- <p class="submit-tip J_submit_tip"></p> -->
+    	    <div class="answersheet-btns">
+                <div id="close_answersheet_btn" class="back_btn">返回</div>
+                <div class="bar"></div>
+                <div id="submit_quiz_btn" class="big_bottom_btn">交卷</div>
+            </div>
+        
+    </div>
+
+    <!-- 主观题 -->
+    <section id="subjectiveanswer"></section>
+    <!-- 客观题嵌入页面防止跳页 -->
+    <div class="blank__wrap J_blanks_wrap">
+        <iframe class="blank__iframe J_blanks_frame" frameborder="0"></iframe>
+    </div>
+
+    <script src="/static/js/libs/raven.min.js"></script>
+    <script>
+        Raven.config('http://ab81288797fc4737b315dde851599c4c@rain-sentry.xuetangx.com/11', {
+            'ignoreErrors': [
+                'WeixinJSBridge is not defined',
+                "undefined is not an object (evaluating 'c.el.trigger')",
+                "Can't find variable: WeixinJSBridge",
+                "Unable to get property 'trigger' of undefined or null reference"
+            ]
+        }).install();
+        Raven.setUserContext({
+            id: user_id
+        });
+    </script>
+
+    
+    <script id="requirejs" src="/static/js/libs/require.b518be6172ca.js"></script>
+    <script src="/static/rainbuild/src/student_quiz_info.5903119a45db.js"></script>
+    
+   
+    <!-- update 腾讯统计 2018.6.6 -->
+    <script>
+      var _mtac = {"performanceMonitor":1,"senseQuery":1};
+      (function() {
+        var mta = document.createElement("script");
+        mta.src = "https://pingjs.qq.com/h5/stats.js?v2.0.4";
+        mta.setAttribute("name", "MTAH5");
+        mta.setAttribute("sid", "500535776");
+        mta.setAttribute("cid", "500613279");
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(mta, s);
+      })();
+    </script>
+   
+
+
+<form style="display: none;" id="proPermInfo">
+    <input name="no_perm_type" value=>
+    <input name="is_can_audit" value=>
+    <input name="university_name" value=>
+    <input name="bind_number_url" value=>
+
+</form>
+
+<style>
+    
+    @media screen and (max-width: 321px) {
+        .font-all{
+            font-size: 12px !important;
+        }
+        .font-grey{
+            font-size: 12px !important;
+        }
+        .go-audit{
+            margin: 15px auto !important;
+        }
+        .info-con .info{
+            margin: 24px auto !important;
+        }
+    }
+    * {
+      box-sizing: border-box;
+    }
+
+    .masking {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 100000;
+      background-color: rgba(0, 0, 0, 0.7);
+    }
+    .masking .mask-wrapper {
+      width: 320px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+    }
+    .masking .mask-wrapper .back-header {
+      width: 100%;
+      height: 134px;
+      background-image: url(/static/image/binding.png);
+      background-size: 100%;
+      background-position: center center;
+    }
+    .masking .mask-wrapper .tips-wrapper {
+      padding: 30px;
+    }
+    .masking .mask-wrapper .tips-wrapper .title {
+      line-height: 24px;
+      margin-bottom: 20px;
+      font-size: 17px;
+      color: #333;
+      text-align: center;
+    }
+    .masking .mask-wrapper .tips-wrapper .gray {
+      margin-bottom: 15px;
+      line-height: 21px;
+      color: #9b9b9b;
+      font-size: 15px;
+    }
+    .masking .mask-wrapper .tips-wrapper .black {
+      margin-bottom: 15px;
+      line-height: 21px;
+      font-size: 15px;
+      color: #333;
+      position: relative;
+    }
+    .black::before{
+        content: "";
+        position: absolute;
+        top: 12px;
+        left: -13px;
+        width: 6px;
+        height: 6px;
+        background-color: #5096F5;
+        border-radius: 50%;
+    }
+    .masking .mask-wrapper .tips-wrapper .button-confirm {
+      background-color: #639ef4;
+      color: #fff;
+      width: 100%;
+      height: 44px;
+      line-height: 44px;
+      border-radius: 4px;
+      margin: 5px auto;
+      text-align: center;
+    }
+    .hide{
+        display: none;
+    }
+</style>
+    <div class="supernatant hide masking">
+        <div class="mask-wrapper">
+            <div class="back-header"></div>
+            <div class="tips-wrapper">
+                <div class="title">旁听提示</div>
+                <div class="gray">
+                    未在教务系统选课，通过其他途径进入课程的学生为旁听生。
+                </div>
+                <div class="black">
+                    旁听生可以参与班级教学活动，但其教学行为数据不计入各类统计，授课教师感知不到旁听生的存在。
+                </div>
+                <div class="black">
+                    旁听产生的学习数据都会被记录，若作为正式学生加入该课程，之前的旁听数据都会恢复。
+                </div>
+                <div class="gray">
+                    如有需要，请联系学校教务老师调整选课数据。
+                </div>
+                <div class="button-confirm">以旁听身份进入</div>
+            </div>
+        </div>
+    </div>
+<script>
+    var $q = $.noConflict(true);
+    function todayTime(){
+        var date = new Date()
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() + ''
+    }
+    $q(function () {
+        var $proPermInfo = $q('#proPermInfo');
+        var $data = {};
+        var $supernatant = $q('.supernatant');
+        var $infoName = $q('.info-con .font-blue');
+        var $binding = $q('.binding')
+        $proPermInfo.find('input').each(function (i, e) {
+            $data[e.name] = e.value;
+        })
+        var today = todayTime()
+        if (localStorage && $data.is_can_audit) {
+            var auditToday = localStorage.getItem('auditToday')
+            if (auditToday !== today) {
+                $supernatant.show()
+            } else {
+                $supernatant.hide()
+            }
+            localStorage.setItem('auditToday', today)
+        }
+        $supernatant.find('.button-confirm')[0].onclick = function() {
+            $supernatant.hide()
+        }
+    })
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="stylesheet" type="text/css" href="/static/css/quiz_info.1dad6ebe25f0.css">
+    <link type="image/x-icon" rel="shortcut icon" href="/static/images/favicon.f330c41632a8.ico">
+    <script src="/static/js/libs/jquery-1.6.min.70eb19bea754.js"></script>
+	<title>密码学作业3</title>
+	<script type="text/javascript">
+    var quizID = 971400;
+    var showAnswer = "True";
+    var deadline = '2022-03-20 23:55:00';
+    var quizData = "eyJMYW5ndWFnZSI6ICJ6aC1DTiIsICJUaXRsZSI6ICJcdTViYzZcdTc4MDFcdTViNjZcdTRmNWNcdTRlMWEzIiwgIkhlaWdodCI6IDcyMC4wLCAiU2xpZGVzIjogW3siU2hhcGVzIjogW3siU2hhcGVUeXBlIjogMTcsICJVUkwiOiAiaHR0cHM6Ly9xbi1zdDAueXVrZXRhbmcuY24vRmktUXZxS3FkcG0zOFM5allOc0hoYm5WRkh2bSIsICJUb3AiOiA4MS43OTU1LCAiSGVpZ2h0IjogNDc1LjIsICJXaWR0aCI6IDM2MC4wLCAiWk9yZGVyUG9zaXRpb24iOiAxLCAiTGluZSI6IHsiRGFzaFN0eWxlIjogIm1zb0xpbmVEYXNoU3R5bGVNaXhlZCIsICJWaXNibGUiOiBmYWxzZSwgIldlaWdodCI6IC0yMTQ3NDgzNjUwLjAsICJCYWNrQ29sb3IiOiAiI0ZGRkZGRiJ9LCAiTGVmdCI6IDMwLjE1LCAiVHlwZSI6ICJtc29UZXh0Qm94IiwgIlJvdGF0aW9uIjogMC4wLCAiSUQiOiA1LCAiRmlsbCI6IHsiVmlzYmxlIjogZmFsc2UsICJUcmFuc3BhcmVuY3kiOiAxLjAsICJCYWNrQ29sb3IiOiAiI0ZGRkZGRiJ9fV0sICJQcm9ibGVtIjogeyJTY29yZSI6IDMwLjAsICJWb2ljZUFsbG93ZWQiOiBmYWxzZSwgIkRlZmF1bHRTY29yZSI6IDEuMCwgIkhhc1JlbWFyayI6IGZhbHNlLCAiUHJvYmxlbUlEIjogMjAyMjY3NjMsICJBbnN3ZXIiOiAiIiwgImFuYWx5c2lzIjogbnVsbCwgIlR5cGUiOiAiU2hvcnRBbnN3ZXIiLCAiUmVzdWx0IjogeyJBbnN3ZXIiOiB7ImNvbnRlbnQiOiAiIiwgImF1ZGlvcyI6IFtdLCAiYXR0YWNobWVudHMiOiB7ImZpbGVsaXN0IjogW3siZmlsZVR5cGUiOiAiZG9jIiwgImZpbGVOYW1lIjogIjIwMjAyMTA1NzRcdTY3MzFcdTk0ZWRcdTViODcuZG9jIiwgImZpbGVTaXplIjogIjYuNyBNQiIsICJfZmlsZVNpemUiOiA3MDY1MDg4LCAiZmlsZVVybCI6ICJodHRwczovL3FuLXNjZDAueXVrZXRhbmcuY24vc3ViamVjdF9maWxlLzE2NDc3ODc2MjM5MjkvODA1MDg4Nl9vXzFmdWpzbmNxdW9tazFtZ3AxaXJvMjVvMXBtOWEiLCAiZmlsZUlEIjogIm9fMWZ1anNuY3F1b21rMW1ncDFpcm8yNW8xcG05YSJ9XX0sICJwaWNzIjogW119fX19XSwgIldpZHRoIjogNDUwLjAsICJWZXJzaW9uIjogIjEuNiJ9";
+    var quizAuth = 0
+	</script>
+</head>
+<body>
+    <!--quizData.showAnswer = (showAnswer == 'True') ? true : false;-->
+
+
+	<!-- 试题部分的顶部导航、题目横向列表。写最外侧是为了在不同的page切换的时候保持fixed定位 -->
+	<header id="quiz_header" class="quiz_header" style="display:none;">
+		<!-- 导航 -->
+		<div class="nav">
+            <div class="time" style="width: 50%; font-size: 18px; margin: 0 auto; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">考试已结束</div>
+			<!-- <div class="left iconfont icon-back"></div> -->
+			<!-- <div id="open_answersheet_btn" class="right iconfont icon-answercard"></div> -->
+            <!-- 答题卡入口 -->
+            <div id="open_answersheet_btn" class="right">
+              <p class="quiz-answersheet">答题卡</p>
+              <p class="quiz-count">(<span class="J_answered_count">0</span>/<span class="J_count">1</span>)</p>
+            </div>
+		</div>
+		<!-- 题目序号列表 -->
+		<!-- <div class="bullet_box" id="scroll_container">
+			<ul id="movable_ul" class="clearfix" style="width:2600px;">
+                
+                    <li  class="done" >
+                        <a data-role="hook" data-href="#answersheet_link1">1</a>
+                        
+                            <i class="iconfont
+                                
+
+                                
+                                "></i>
+                        
+                    </li>
+                
+			</ul>
+		</div> -->
+	</header>
+
+    <!-- 封面 -->
+    <div id="cover" class="cover">
+        <div class="paper_box">
+            <img id="paper" class="paper" src="/static/images/wx_paperstack.png">
+            <div id="avatar_box" class="avatar_box">
+                <img class="avatar" src="http://sfe.ykt.io/o_1bsn23hg89klt0h1lb01p63dd69.jpg">
+                <div class="owner">朱晓玲</div>
+                <div class="course ellipsis-2line">密码学作业3</div>
+                
+                
+                <div class="ddl">截止时间：2022-03-20 23:55</div>
+                
+                
+                    
+                
+            </div>
+        </div>
+        
+            <div id="check_quiz_btn" class="big_bottom_btn">正在加载...</div>
+        
+
+    </div>
+
+    <div id="quiz_cont" class="quiz_cont" style="display:none;">
+    	<!-- 顶部卸载body子级： #quiz_header -->
+
+    	<!-- 题目部分 -->
+    	<div id="problem_cont" class="problem_cont">
+
+    	</div>
+    </div>
+
+    <div id="answer_sheet" class="answer_sheet" style="display:none;">
+    	<header>
+    		<div class="nav">
+                <div class="time">答题卡</div>
+    			<div id="close_answersheet_btn" class="left iconfont icon-back"></div>
+    		</div>
+    	</header>
+        <div style="height: 10px; background: #eeeff1;"></div>
+    	<div class="bullet_box">
+    		<ul id="answer_sheet_ul" class="clearfix">
+                
+                    <li  class="done" >
+                        <a data-href="#answersheet_link1">1</a>
+                    </li>
+                
+    		</ul>
+    	</div>
+    </div>
+
+     <!-- 图片放大结构 -->
+    <section class="pswp J_pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+      <div class="pswp__bg"></div>
+
+      <div class="pswp__scroll-wrap">
+
+        <div class="pswp__container">
+          <div class="pswp__item"></div>
+          <div class="pswp__item"></div>
+          <div class="pswp__item"></div>
+        </div>
+
+        <div class="pswp__ui pswp__ui--hidden">
+
+          <div class="pswp__top-bar">
+
+            <div class="pswp__counter"></div>
+
+            <div class="pswp__preloader">
+              <div class="pswp__preloader__icn">
+                <div class="pswp__preloader__cut">
+                  <div class="pswp__preloader__donut"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pswp__caption">
+            <div class="pswp__caption__center"></div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    
+    <script id="requirejs" src="/static/js/libs/require.b518be6172ca.js"></script>
+    <script src="/static/rainbuild/src/student_quiz_result_info.8774bbe4541a.js"></script>
+    
+    
+    <!-- update 腾讯统计 2018.6.6 -->
+    <script>
+      var _mtac = {"performanceMonitor":1,"senseQuery":1};
+      (function() {
+        var mta = document.createElement("script");
+        mta.src = "https://pingjs.qq.com/h5/stats.js?v2.0.4";
+        mta.setAttribute("name", "MTAH5");
+        mta.setAttribute("sid", "500535776");
+        mta.setAttribute("cid", "500613279");
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(mta, s);
+      })();
+    </script>
+    
+
+<form style="display: none;" id="proPermInfo">
+    <input name="no_perm_type" value=>
+    <input name="is_can_audit" value=>
+    <input name="university_name" value=>
+    <input name="bind_number_url" value=>
+
+</form>
+
+<style>
+    
+    @media screen and (max-width: 321px) {
+        .font-all{
+            font-size: 12px !important;
+        }
+        .font-grey{
+            font-size: 12px !important;
+        }
+        .go-audit{
+            margin: 15px auto !important;
+        }
+        .info-con .info{
+            margin: 24px auto !important;
+        }
+    }
+    * {
+      box-sizing: border-box;
+    }
+
+    .masking {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 100000;
+      background-color: rgba(0, 0, 0, 0.7);
+    }
+    .masking .mask-wrapper {
+      width: 320px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+    }
+    .masking .mask-wrapper .back-header {
+      width: 100%;
+      height: 134px;
+      background-image: url(/static/image/binding.png);
+      background-size: 100%;
+      background-position: center center;
+    }
+    .masking .mask-wrapper .tips-wrapper {
+      padding: 30px;
+    }
+    .masking .mask-wrapper .tips-wrapper .title {
+      line-height: 24px;
+      margin-bottom: 20px;
+      font-size: 17px;
+      color: #333;
+      text-align: center;
+    }
+    .masking .mask-wrapper .tips-wrapper .gray {
+      margin-bottom: 15px;
+      line-height: 21px;
+      color: #9b9b9b;
+      font-size: 15px;
+    }
+    .masking .mask-wrapper .tips-wrapper .black {
+      margin-bottom: 15px;
+      line-height: 21px;
+      font-size: 15px;
+      color: #333;
+      position: relative;
+    }
+    .black::before{
+        content: "";
+        position: absolute;
+        top: 12px;
+        left: -13px;
+        width: 6px;
+        height: 6px;
+        background-color: #5096F5;
+        border-radius: 50%;
+    }
+    .masking .mask-wrapper .tips-wrapper .button-confirm {
+      background-color: #639ef4;
+      color: #fff;
+      width: 100%;
+      height: 44px;
+      line-height: 44px;
+      border-radius: 4px;
+      margin: 5px auto;
+      text-align: center;
+    }
+    .hide{
+        display: none;
+    }
+</style>
+    <div class="supernatant hide masking">
+        <div class="mask-wrapper">
+            <div class="back-header"></div>
+            <div class="tips-wrapper">
+                <div class="title">旁听提示</div>
+                <div class="gray">
+                    未在教务系统选课，通过其他途径进入课程的学生为旁听生。
+                </div>
+                <div class="black">
+                    旁听生可以参与班级教学活动，但其教学行为数据不计入各类统计，授课教师感知不到旁听生的存在。
+                </div>
+                <div class="black">
+                    旁听产生的学习数据都会被记录，若作为正式学生加入该课程，之前的旁听数据都会恢复。
+                </div>
+                <div class="gray">
+                    如有需要，请联系学校教务老师调整选课数据。
+                </div>
+                <div class="button-confirm">以旁听身份进入</div>
+            </div>
+        </div>
+    </div>
+<script>
+    var $q = $.noConflict(true);
+    function todayTime(){
+        var date = new Date()
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() + ''
+    }
+    $q(function () {
+        var $proPermInfo = $q('#proPermInfo');
+        var $data = {};
+        var $supernatant = $q('.supernatant');
+        var $infoName = $q('.info-con .font-blue');
+        var $binding = $q('.binding')
+        $proPermInfo.find('input').each(function (i, e) {
+            $data[e.name] = e.value;
+        })
+        var today = todayTime()
+        if (localStorage && $data.is_can_audit) {
+            var auditToday = localStorage.getItem('auditToday')
+            if (auditToday !== today) {
+                $supernatant.show()
+            } else {
+                $supernatant.hide()
+            }
+            localStorage.setItem('auditToday', today)
+        }
+        $supernatant.find('.button-confirm')[0].onclick = function() {
+            $supernatant.hide()
+        }
+    })
+</script>
+
+</body>
+</html>
