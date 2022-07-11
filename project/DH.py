@@ -30,7 +30,7 @@ def get_generator(p):
     return list
 
 
-# A，B得到各自的计算数
+# A，B得到各自的YA YB
 def get_calculation(p, a, X):
     Y = (a ** X) % p
     return Y

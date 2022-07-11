@@ -90,7 +90,7 @@ def hashing(M, size = 5):
 def signMessage(M, d, N):
     s = power(M, d, N) #使用私钥签名 hashM**d mod N 得到签名内容
     return s
-#将得到
+#验签
 def verifySign(s, e,n):
     w = power(s, e, n)
     return w
