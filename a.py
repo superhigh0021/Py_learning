@@ -1,480 +1,254 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
-
-
-import base64
-import time
-import json
-import re
-import requests
-import os
-import Crypto.PublicKey.RSA
-import Crypto.Cipher.PKCS1_v1_5
-
-"""
-第一部分：获取用户长江雨课堂相应试卷的课程Id和课堂Id
-"""
-#对密码进行RSA加密
-def RSA_PSW(pwd):
-    try:
-        public_key = "-----BEGIN PUBLIC KEY-----\nMIGJAoGBAJAFo9ftysQfr+NLiFEPuVmuwVEh1/ASEffSicWeudbGJEBPM/1YSd5c\nkRkeimbO52Q1LlsOnnVIKcFQYaB8v+xRSuWuFXbGdNJ7WNGX3bh6NXmuRWSKKLzm\nOn0bx4msk3qSUezQ99h+ngRUnzrzyqmLmIRO2D6rghOhzITIPX7vAgMBAAE=\n-----END PUBLIC KEY-----"
-        y = pwd.encode(encoding="utf-8")
-        b = public_key.encode(encoding="utf-8")
-        cipher_public = Crypto.Cipher.PKCS1_v1_5.new(Crypto.PublicKey.RSA.importKey(b))
-        #使用长江雨课堂公钥进行加密
-        cipher_text = cipher_public.encrypt(y)
-        text = base64.b64encode(cipher_text).decode(encoding="utf-8")
-        return text
-    except:
-        return False
-    
-#登录长江雨课堂
-def login(tel,pwd):
-    url = 'https://changjiang.yuketang.cn/pc/login/verify_pwd_login/'
-    data = {
-            "type":"PP",
-            "name":tel,
-            "pwd":pwd
-    }
-    headers={
-            'Connection': 'keep-alive',
-            'Content-Language':'zh-cn',
-            'Content-Type': 'text/html; charset=utf-8',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Accept-Language': 'zh-CN,zh;q=0.9',
-            'Host': 'changjiang.yuketang.cn',
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Mobile Safari/537.36'
-    }
-    try:
-        session = requests.session()
-        cookie_jar = session.post(url=url,json=data,headers=headers,verify=False).cookies
-        cookie_t = requests.utils.dict_from_cookiejar(cookie_jar)
-        cookieStr = "csrftoken=" + cookie_t['csrftoken'] + ";" + "sessionid=" + cookie_t['sessionid']
-        return cookieStr
-    except:
-        return False
-
-def smlogin(cookieinfo):
-    try:
-        cookie_t = cookieinfo
-        cookieStr = "csrftoken=" + cookie_t['csrftoken'] + ";" + "sessionid=" + cookie_t['sessionid']
-        return cookieStr
-    except:
-        return False
-    
-#查找课程的信息
-def showCourse(cookieStr):
-    cookie = cookieStr
-    url = "https://changjiang.yuketang.cn/v/course_meta/my_courses?_date="
-    curtime = "{0:.3f}".format(float(time.time())).replace(".","")
-    url += curtime
-    try:
-        headers={
-            'accept':'*/*',
-            'accept-language':'zh-CN,zh;q=0.9',
-            'connection':'keep-alive',
-            'referer':url,
-            'Cookie': cookie,
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36'
-        }
-        response = requests.get(url=url,headers=headers,verify=False)
-        courseinfo = response.json()
-        return courseinfo['data']['classrooms']
-    except:
-        return False
-
-#提取课程关键信息     
-def getCourse(courseinfo):
-    course_list = []
-    try:
-        for elem in courseinfo:
-            elem_list = []
-            courseName = elem['course']['name'] + ","              #课程名
-            courseId = str(elem['course']['id']) + ","             #course_id
-            classroomId = str(elem['id']) + ","                    #classroom_id
-            studentCount = str(elem['students_count']) + ","       #学生人数
-            startTime = elem['time'] + ","                         #开课时间
-            university = elem['university_name']             #学校名称
-            elem_list.append(courseName)
-            elem_list.append(courseId)
-            elem_list.append(classroomId)
-            elem_list.append(studentCount)
-            elem_list.append(startTime)
-            elem_list.append(university)
-            course_list.append(elem_list)
-        return course_list 
-    except:
-        return False
-
-#将提取课程信息写入文件            
-def writeCourseInfo(courselist,url):
-    fileadd = url
-    dicts = {}
-    try:
-        fo = open(fileadd,'w')
-        suoyin = 1
-        for lists in courselist:
-            listLen = len(lists)
-            for i in range(listLen):
-                fo.write(lists[i])
-            fo.write("\n")
-            dicts[str(suoyin)] = lists[0].replace(',','')
-            suoyin += 1
-        fo.close()
-        return True,url,dicts
-    except:
-        return False,url,dicts
-
-#读取写入的课程信息文件            
-def readCourseInfo(query,url):
-    fileadd = url
-    queryNUm = query
-    course_id = "无"
-    classroom_id = "无"
-    try:
-        fo = open(fileadd,'r')
-        data = fo.read().split('\n')
-        suoyin = 1
-        for lists in data:
-            lists = lists.split(',')
-            listLen = len(lists)
-            for i in range(listLen):
-                if(queryNUm == str(suoyin)):
-                    course_id = lists[1]
-                    classroom_id = lists[2]
-            suoyin += 1
-        fo.close()
-        return True,course_id,classroom_id
-    except:
-        return False,course_id,classroom_id
-
-#获取所查询课程详细信息
-def getDetailQuery(cookie,course_id,classroom_id):
-    #获取每门课程考试的Id
-    curtime = "{0:.3f}".format(float(time.time())).replace(".","")
-    url = "https://changjiang.yuketang.cn/v/course_meta/classroom_logs?course_id=" + course_id + "&classroom_id=" + classroom_id + "&activity_type=-1&date_time=" + curtime
-    try:
-        headers={
-            'accept':'*/*',
-            'accept-language':'zh-CN,zh;q=0.9',
-            'connection':'keep-alive',
-            'referer':url,
-            'Cookie': cookie,
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36'
-        }
-        response = requests.get(url=url,headers=headers,verify=False)
-        exam = response.json()
-        return exam['data']['activities']
-    except:
-        return False
-
-#提取所查询课程关键详细信息 
-def getExam(queryinfo):
-    query_list = []
-    try:
-        for elem in queryinfo:
-            for el in elem:
-                if(str(el['type']) == '4'):
-                    elem_list = []
-                    examTitle = el['title']                     #项目名
-                    examId = str(el['id'])                      #项目id
-                    quizId = str(el['courseware_id'])           #courseware_id
-                    queryType = str(el['type'])                 #类型(Type=4为试卷)
-                    elem_list.append(examTitle)
-                    elem_list.append(examId)
-                    elem_list.append(quizId)
-                    elem_list.append(queryType)
-                    query_list.append(elem_list)
-        return query_list 
-    except:
-        return False
-
-#获取所要查询试卷加密的题目信息
-def getHtml(cookie,query,rawaddr):
-    url = "https://changjiang.yuketang.cn/quiz/quiz_info/" +  query + "/"
-    try:
-        headers={
-            'accept':'*/*',
-            'accept-language':'zh-CN,zh;q=0.9',
-            'connection':'keep-alive',
-            'referer':url,
-            'Cookie': cookie,
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36'
-        }
-        response = requests.get(url=url,headers=headers,verify=False)
-        exam = response.text
-        fo = open(rawaddr,'w')
-        fo.write(exam)
-        fo.close()
-        return True
-    except:
-        return False
-
-#获取加密字段
-def getSecret(rawaddr,dataaddr):
-    try:
-        fo = open(rawaddr,'r')
-        fs = open(dataaddr,'w')
-        data = fo.read()
-        p = re.compile(r'var quizData = "(.*?)";')
-        data = p.findall(data)
-        fs.write(data[0])
-        fo.close()
-        fs.close()
-        return True
-    except:
-        return False
-    
-"""
-第二部分：长江雨课堂对应试卷作答情况解密
-"""
-#读取加密文件
-def readCode(readUrl):
-    try:
-        url = readUrl
-        rcode = open(url,'r')
-        code = rcode.readline()
-        rcode.close()
-        return code
-    except:
-        return False
-
-#写入解密文件
-def writeText(writeUrl,text):
-    try:
-        url = writeUrl
-        wcode = open(url,'w')
-        wcode.write(text)
-        wcode.close()
-        return "写入解密文件完毕"
-    except:
-        return "写入解密文件失败"
-
-# base64解密
-def base64Decode(rawCode):
-    try:
-        mystr = rawCode
-        str_url = base64.b64decode(mystr).decode("utf-8")
-        return str_url
-    except:
-        return False
-
-"""
-第三部分：获取试卷题目图片
-"""
-#获取试卷中所有的图片链接
-def getImgUrl(decodeaddr,imgsaveDir):
-    try:
-        fo = open(decodeaddr,'r')
-        data = json.loads(fo.read())
-        problemdata = data['Slides']
-        dicts = {'0':'题目','1':'A','2':'B','3':'C','4':'D','5':'E','6':'F','7':'G'}
-        alllist = []
-        urllist = []
-        for problem in problemdata:
-            urllist = []
-            suoyin = 0
-            try:
-                for en in problem['Shapes']:
-                    problemlist = []
-                    problemlist.append(dicts[str(suoyin)])
-                    problemlist.append(en['URL'])                               #获取图片链接
-                    urllist.append(problemlist)
-                    suoyin += 1
-                problemlist = []
-                try:
-                    Answers = str(problem['Problem']['Answer'])
-                    try:
-                        if(str(problem['Problem']['analysis']) == "None"):
-                            Analysis = "暂无分析"
-                        else:
-                            Analysis = str(problem['Problem']['analysis'])
-                    except:
-                        Analysis = "暂无分析"
-                    if(Answers == ""):
-                        Answers = "答案暂未公布(可能包含在分析中)"
-                    problemlist.append('问题ID:' + str(problem['Problem']['ProblemID']))            #获取问题ID
-                    problemlist.append('标准答案:' + Answers)                                       #获取答案
-                    problemlist.append('我的作答:' + str(problem['Problem']['Result']['Answer']))   #获取我的作答
-                    problemlist.append('分析:' + Analysis)                                          #分析(很可能含答案)
-                    urllist.append(problemlist)
-                    alllist.append(urllist)
-                except:
-                    alllist.append(urllist)
-                    print('这是封面')
-            except:
-                continue
-                
-        count = 1
-        for url in alllist:
-            answerDir = imgsaveDir + '答案.csv'
-            if(count == 1):
-                #覆盖之前的答案
-                fs = open(answerDir,'w')
-                fs.write("")
-                fs.close()
-            fs = open(answerDir,'a+')
-            if(len(url) >= 2):
-                fs.write(str(url[0][1]) + str(url[-1]) + '\n')
-                fs.close()
-            elif(len(url) <= 1):
-                fs.write('----' + '\n')
-            else:
-                fs.write(str(url[0][1]) + str(url[1]) + '\n')
-                fs.close()
-            for i in range(len(url)):
-                try:
-                    imgName = ""
-                    imgUrl = url[i][1]
-                    print(imgUrl)
-                    imgName += "第" + str(count) + "题"
-                    if(len(imgUrl) >= 5 and imgUrl[0:5] == "https"):
-                        imgName += str(url[i][0])
-                        imgres = requests.get(imgUrl) #取得文件内容
-                        imgSaveUrl = imgsaveDir + "{0:0>3}".format(str(count)) + '-' + str(i) + '.png'
-                        with open(imgSaveUrl, "wb") as f:
-                           f.write(imgres.content)
-                           f.close()
-                        time.sleep(0.1)
-                except:
-                    continue
-            count += 1
-        os._exit(0)
-        return True
-    except Exception as e:
-        print(e)
-        return False
-
-"""
-第四部分：其他功能相关函数
-"""
-#创建目录文件夹 
-def mkdir(path):
-    try:
-        # 去除首位空格
-        path=path.strip()
-        # 去除尾部 \ 符号
-        path=path.rstrip("\\") 
-        # 判断路径是否存在
-        # 存在     True
-        # 不存在   False
-        isExists=os.path.exists(path) 
-        # 判断结果
-        if not isExists:
-            # 如果不存在则创建目录
-            # 创建目录操作函数
-            os.makedirs(path) 
-            print(path+'创建成功')
-            return True
+'''
+Created on Oct 30, 2017
+朴素贝叶斯
+'''
+ 
+from numpy import * 
+def loadDataSet():
+    postingList = [['my', 'like', 'has', 'flea', 'problems', 'help', 'please'],
+                   ['maybe', 'not', 'take', 'him', 'to', 'dog', 'park', 'stupid'],
+                   ['my', 'dalmation', 'is', 'so', 'cute', 'I', 'love', 'him'],
+                   ['stop', 'posting', 'stupid', 'worthless', 'garbage'],
+                   ['mr', 'licks', 'ate', 'my', 'steak', 'how', 'to', 'stop', 'him']]
+                   #  ,
+                   # ['quit', 'buying', 'worthless', 'dog', 'food', 'stupid']]  # 每一行代表一篇文档
+    classVec = [0, 1, 0, 1, 0]#, 1]  # 1代表侮辱性文字，0代表正常言论
+    return postingList, classVec  # 返回数据集和类别标签
+ 
+ 
+'''
+使用set构造函数去除数据集中每篇文档的重复词语
+''' 
+def createVocabList(dataSet):
+    vocabSet = set([])  # 创建一个空的集合
+    for document in dataSet:  # 读取每一篇文档
+        vocabSet = vocabSet | set(document)  # 两个集合的并操作
+    return list(vocabSet)  # 返回不包含重复词语的列表，该列表包含所有词，并且以Ascll排序好
+ 
+ 
+'''
+在词汇表中，把一篇文档中出现的单词标记为1，其余标记为0
+@param vocabList：词汇表
+@param inputSet：一篇文档
+''' 
+def setOfWords2Vec(vocabList, inputSet):
+    returnVec = [0] * len(vocabList)  # 创建一个长度为len(vocabList)的零向量
+    for word in inputSet:
+        if word in vocabList:  # 如果该词汇出现在词汇表中，则找到该词汇在词汇表中的位置，标记为1
+            returnVec[vocabList.index(word)] = 1
         else:
-            # 如果目录存在则不创建，并提示目录已存在
-            print(path+'目录已存在')
-            return False
-    except Exception as e:
-        print("mkdir(path)--ERROR"+e)
-        return False
-
+            print("the word: %s is not in my Vocabulary!" % word)  # 提示后，忽略该不存在的词语
+    return returnVec  # 返回一个和词汇表等长的0, 1向量
+ 
+ 
+'''
+朴素贝叶斯分类器训练函数
+@param trainMatrix：文档矩阵，每一行为一个和词汇表等长的0, 1向量，行数代表文档个数
+@param trainCategory：每篇文档的类别标签向量
+'''  
+def trainNB0(trainMatrix, trainCategory):
+    numTrainDocs = len(trainMatrix)  # 文档数目
+    numWords = len(trainMatrix[0])  # 计算词汇表长度
+    pAbusive = sum(trainCategory) / float(numTrainDocs)  # 计算属于侮辱性文档(class=1)的概率
+    p0Num = ones(numWords);
+    p1Num = ones(numWords)  # 分子，所有词出现数初始化为1，防止在计算P(w0|1)P(w1|1)P(w2|1)某个概率为0乘积就为0的情况发生
+    p0Denom = 2.0;
+    p1Denom = 2.0  # 分母，初始化次数为2，代表每一类文档至少有两个词，总词数
+    for i in range(numTrainDocs):
+        if trainCategory[i] == 1:  # 如果该篇文档是侮辱性文档
+            p1Num += trainMatrix[i]  # 每篇文档每个单词的次数累加
+            p1Denom += sum(trainMatrix[i])  # 每篇文档总单词数累加
+        else:
+            p0Num += trainMatrix[i]
+            p0Denom += sum(trainMatrix[i])
+    p1Vect = log(p1Num / p1Denom)  # P(wi|c1)，词汇表中属于侮辱性词汇的每个单词在总单词中出现的概率，
+    p0Vect = log(p0Num / p0Denom)  # P(wi|c0)，词汇表中属于非侮辱性词汇的每个单词的概率，用log防止多个小概率连乘后乘积变为0的情况
+    print(p1Num,'\n', p1Denom,'\n',p1Vect)
+    print(p0Num,'\n', p0Denom,'\n',p0Vect)
+    return p0Vect, p1Vect, pAbusive  # 返回和词汇表等长的非侮辱性词汇的概率向量、和词汇表等长的侮辱性词汇的概率向量、侮辱性文档的概率
+'''
+print(p1Num,'\n', p1Denom,'\n',p1Vect)
+打印结果：
+[1. 1. 1. 1. 2. 1. 1. 1. 2. 1. 2. 2. 1. 1. 1. 2. 1. 2. 2. 1. 1. 2. 2. 1.1. 1. 1. 2. 3. 2.] 
+ 15.0   
+ [-2.7080502  -2.7080502  -2.7080502  -2.7080502  -2.01490302 -2.7080502-2.7080502  -2.7080502  -2.01490302 -2.7080502  -2.01490302 -2.01490302
+ -2.7080502  -2.7080502  -2.7080502  -2.01490302 -2.7080502  -2.01490302 -2.01490302 -2.7080502  -2.7080502  -2.01490302 -2.01490302 -2.7080502
+ -2.7080502  -2.7080502  -2.7080502  -2.01490302 -1.60943791 -2.01490302]
+'''
+ 
+'''
+朴素贝叶斯分类函数（对于一个待分类的文本，计算所有词汇概率之和属于哪一个类的概率最大，就确定为该类）
+@param vec2Classify：待分类的和词汇表等长的0, 1向量
+@param p0Vec：词汇表等长的非侮辱性词汇的概率向量
+@param p1Vec：词汇表等长的侮辱性词汇的概率向量
+@param pClass1：侮辱性词汇的文档概率 
+则通过该函数计算得 p1 < p0 , vec2Classify 更可能划分为非侮辱性文档
+'''
+ 
+ 
+def classifyNB(vec2Classify, p0Vec, p1Vec, pClass1):
+    p1 = sum(vec2Classify * p1Vec) + log(pClass1)  # 对应元素相乘，然后相加，得到P(w|c1)，因为前面是log，故后面也是 +log
+    p0 = sum(vec2Classify * p0Vec) + log(1.0 - pClass1)  # 对应元素相乘，然后相加，得到P(w|c0)，因为前面是log，故后面也是 +log
+    if p1 > p0:
+        return 1
+    else:
+        return 0
+ 
+'''
+使用朴素贝叶斯过滤网站的恶意留言
+''' 
+def testingNB():
+    listOPosts, listClasses = loadDataSet()
+    myVocabList = createVocabList(listOPosts)
+    trainMat = []
+    for postinDoc in listOPosts:
+        trainMat.append(setOfWords2Vec(myVocabList, postinDoc))
+    p0V, p1V, pAb = trainNB0(array(trainMat), array(listClasses))
+    testEntry = ['love', 'my', 'dalmation']
+    thisDoc = array(setOfWords2Vec(myVocabList, testEntry))
+    print(testEntry, 'classified as: ', classifyNB(thisDoc, p0V, p1V, pAb))
+    testEntry = ['stupid', 'garbage', '33']
+    thisDoc = array(setOfWords2Vec(myVocabList, testEntry))
+    print(testEntry, 'classified as: ', classifyNB(thisDoc, p0V, p1V, pAb))
+ 
+ 
+testingNB()  # ['love', 'my', 'dalmation'] classified as:  0      ['stupid', 'garbage'] classified as:  1
+ 
+'''
+修改 setOfWords2Vec() 函数，变为词袋模型，每篇文档中的词汇可以出现多次
+''' 
+def bagOfWords2VecMN(vocabList, inputSet):
+    returnVec = [0] * len(vocabList)
+    for word in inputSet:
+        if word in vocabList:
+            returnVec[vocabList.index(word)] += 1
+    return returnVec  # 返回一个和词汇表等长的向量，数值代表该词汇出现在该文档中的次数
+ 
+ 
+'''
+利用python的正则表达式模块re切分句子
+@param bigString：文本字符串
+''' 
+def textParse(bigString):  # input is big string, #output is word list
+    import re
+    # listOfTokens = re.split(r'\W*', bigString)  # 分隔符是除单词、数字外的任意字符串 (\W* = 分隔符不是单词、数字，\w* = 分隔符是单词、数字)
+    listOfTokens = re.split(r'\W+', bigString)
+    return [tok.lower() for tok in listOfTokens if len(tok) > 2]  # 去除长度小于3的字符串（包括空字符串，如末尾有句号的就会产生空字符串）
+ 
+ 
+'''
+使用朴素贝叶斯过滤垃圾邮件
+''' 
+def spamTest():
+    # docList 是文档集合（相当于前面的dataSet），fullText 是所有文档中的词汇，classList 是分类类别
+    docList = [];
+    fullText = [];
+    classList = []
+    # 导入并解析文本文件
+    for i in range(1, 26):  # [1,26)
+        # print(open('email/spam/%d.txt' % i).read())
+        wordList = textParse(open('email/spam/%d.txt' % i).read())  # spam（垃圾）类邮件
+        docList.append(wordList)
+        fullText.extend(wordList)
+        classList.append(1)
+        wordList = textParse(open('email/ham/%d.txt' % i).read())  # ham类邮件
+        docList.append(wordList)
+        fullText.extend(wordList)
+        classList.append(0)
+    vocabList = createVocabList(docList)  # 创建词汇表
+    trainingSet = list(range(50))  # 训练集，是一个整数列表，范围是[0, 50)。用list转化是因为python3中range会返回range对象，而不是列表
+    testSet = []  # 创建的一个大小为10的测试集
+    for i in range(10):  # 从50个训练文档中随机选择10个文档作为测试集
+        randIndex = int(random.uniform(0, len(trainingSet)))  # random.uniform 在[0,50) 内随机生成一个实数，然后将其转化为整数
+        testSet.append(trainingSet[randIndex])
+        del (trainingSet[randIndex])  # 支持list对象删除元素，而不支持range对象删除，故将range改成list
+    trainMat = [];
+    trainClasses = []
+    # 利用剩下的40篇文档训练分类器
+    for docIndex in trainingSet:
+        trainMat.append(bagOfWords2VecMN(vocabList, docList[docIndex]))
+        trainClasses.append(classList[docIndex])
+    p0V, p1V, pSpam = trainNB0(array(trainMat), array(trainClasses))
+    # 对10篇文档进行分类测试，统计出错概率
+    errorCount = 0
+    for docIndex in testSet:
+        wordVector = bagOfWords2VecMN(vocabList, docList[docIndex])
+        # print(vocabList)
+        print("classList[docIndex]", classList[docIndex], "判断结果：", classifyNB(array(wordVector), p0V, p1V, pSpam))
+        if classifyNB(array(wordVector), p0V, p1V, pSpam) != classList[docIndex]:
+            errorCount += 1
+            print("docIndex:", docIndex, "第几个文件：:", docIndex / 2, "classification error", docList[docIndex])
+    print('\nthe error rate of spam email is: ', float(errorCount) / len(testSet))
+    print('\nthe error rate of spam email is: ', '{:.2f}%'.format(float(errorCount) / len(testSet) * 100))
+ 
+    # return vocabList,fullText
+ 
+ 
+spamTest()  # 测试10篇文档的出错率
+ 
+'''
+得到高频出现的前30个词汇，因为高频出现的30个词汇可能是无意义的助词等辅助性词汇，之后要把它们删除
+@param vocabList：词汇表
+@param fullText：所有文档中的词汇
+''' 
+def calcMostFreq(vocabList, fullText):
+    import operator
+    freqDict = {}
+    for token in vocabList:
+        freqDict[token] = fullText.count(token)  # 统计词汇表中的每一个单词在所有文档中出现的次数
+    sortedFreq = sorted(freqDict.items(), key=operator.itemgetter(1), reverse=True)
+    return sortedFreq[:30]  # 返回一个包含频率最高的30个词汇的字典，key=词汇，value=该词汇的次数
+ 
+ 
+'''
+使用朴素贝叶斯从个人广告中获取区域倾向
+@param feed1：属于第一类的RSS文件
+@param feed0：属于第二类的RSS文件
+''' 
+def localWords(feed1, feed0):
+    import feedparser
+    docList = [];
+    classList = [];
+    fullText = []
+    minLen = min(len(feed1['entries']), len(feed0['entries']))  # 取两个RSS源(xml文件数量)中的最小值
+    for i in range(minLen):
+        wordList = textParse(feed1['entries'][i]['summary'])
+        docList.append(wordList)
+        fullText.extend(wordList)
+        classList.append(1)  # NY是类别1
+        wordList = textParse(feed0['entries'][i]['summary'])
+        docList.append(wordList)
+        fullText.extend(wordList)
+        classList.append(0)
+    vocabList = createVocabList(docList)
+    # 移除频率最高的30个词汇，可以删除以下3行代码，观察错误率和输出的频率最高的词汇
+    top30Words = calcMostFreq(vocabList, fullText)
+    for pairW in top30Words:
+        if pairW[0] in vocabList: vocabList.remove(pairW[0])  # pairW[0] 是词汇，pairW[1] 是词汇出现次数
+    trainingSet = list(range(2 * minLen));
+    testSet = []
+    # 随机选取20个作为测试集       
+    for i in range(20):
+        randIndex = int(random.uniform(0, len(trainingSet)))
+        testSet.append(trainingSet[randIndex])
+        del (trainingSet[randIndex])
+    trainMat = [];
+    trainClasses = []
+    for docIndex in trainingSet:
+        trainMat.append(bagOfWords2VecMN(vocabList, docList[docIndex]))
+        trainClasses.append(classList[docIndex])
+    p0V, p1V, pSpam = trainNB0(array(trainMat), array(trainClasses))
+    errorCount = 0
+    for docIndex in testSet:
+        wordVector = bagOfWords2VecMN(vocabList, docList[docIndex])
+        if classifyNB(array(wordVector), p0V, p1V, pSpam) != classList[docIndex]:
+            errorCount += 1
+    print('\nthe error rate of RSS is: ', float(errorCount) / len(testSet))
+    return vocabList, p0V, p1V
+ 
+ 
 if __name__ == '__main__':
-    cookieinfo = {}
-    loginway = str(input('输入0为Cookie登录,输入其他为手机号+密码登录:'))
-    #登录方式一:需要自行修改tel(注册电话号码)与pwd(对应加密后的密码)字段的值
-    if(loginway != "0"):
-        #声明：这种登录方法长久有效，账户信息不变时不需要再次修改或更新
-        tel = "18361406837"
-        password = "Lazy574839"
-        pwd = RSA_PSW(password)
-        if(pwd != False):
-            cookieStr = login(tel,pwd)
-        else:
-            print('密码加密失败')
-            print('程序已自动切换为Cookie登录')
-            cookieinfo['csrftoken'] = str(input('请输入csrftoken:'))
-            cookieinfo['sessionid'] = str(input('请输入sessionid:'))
-            cookieStr = smlogin(cookieinfo)
-    #登录方式二:(不要修改任何字段的值)
-    else:
-        #声明：这种登录方法有时效性，需要及时更新cookieinfo['csrftoken']和cookieinfo['sessionid']的值
-        #如输入:928khBplVlPJTqiKWcYvF4PsS3NjgD4O
-        cookieinfo['csrftoken'] = str(input('请输入csrftoken:'))
-        #如输入:1yjl3t64wefkem71f449s87z94f2a0gx
-        cookieinfo['sessionid'] = str(input('请输入sessionid:'))
-        cookieStr = smlogin(cookieinfo)
-    if(cookieStr == False):
-        print('长江雨课堂登录失败')
-    else:
-        courseinfo = showCourse(cookieStr)
-        if(courseinfo == False):
-            print('获取课程信息失败')
-        else:
-            courselist = getCourse(courseinfo)
-            if(courselist == False):
-                print('提取课程关键要素失败')
-            else:
-                mkdir(".\\我的课程信息\\")
-                haveWrite, courseaddr, coursename = writeCourseInfo(courselist,'我的课程信息/courseInfo.csv')
-                if(haveWrite == False):
-                    print('课程信息写入文件' + courseaddr + '失败')
-                else:
-                    print('恭喜课程信息写入成功')
-                    course_dicts = {}
-                    for course in courselist:
-                         course_dicts[course[1].replace(',','')] = course[0].replace(',','')
-                    for i in range(len(coursename)):
-                        print(str(i + 1),coursename[str(i + 1)])
-                    courseQuery = str(input("请输入上述课程名对应的序号:"))
-                    haveQuery, course_id, classroom_id = readCourseInfo(courseQuery,'我的课程信息/courseInfo.csv')
-                    try:
-                        dirName = course_dicts[course_id]
-                        mkdir('.\\我的课程信息\\' + dirName + '\\')
-                    except:
-                        print('课程名与课程ID匹配失败')
-                        haveQuery == False
-                    if(haveQuery == False):
-                        print('课程查询失败')
-                    else:
-                        detailQuery = getDetailQuery(cookieStr,course_id,classroom_id)
-                        if(detailQuery == False):
-                            print('获取所查询课程详细信息失败')
-                        else:
-                            examlist = getExam(detailQuery)
-                            if(examlist == False):
-                                print('考试信息获取失败')
-                            else:
-                                for i in range(len(examlist)):
-                                    try:
-                                        print("{:-<10}----".format(examlist[i][2]),end = "")
-                                        print(examlist[i][0])
-                                    except:
-                                        print('获取第' + str(i+1) + '个考试信息的Id失败')
-                                        continue
-                                examquery = str(input("请输入上述查询的考试号:"))
-                                exam_dicts = {}
-                                for exam in examlist:
-                                    exam_dicts[exam[2].replace(',','')] = exam[0].replace(',','')   
-                                try:
-                                    mkdir('.\\我的课程信息\\' + dirName + '\\' + exam_dicts[examquery] + '\\')
-                                    rawaddr = '我的课程信息/' + dirName + '/' + exam_dicts[examquery] + '/' + 'rawQuiz-' + examquery + '.txt'
-                                    haveHtml = getHtml(cookieStr,examquery,rawaddr)
-                                except:
-                                    haveHtml = False
-                                if(haveHtml == False):
-                                    print('获取所要查询试卷加密的题目信息失败')
-                                else:
-                                    dataaddr = '我的课程信息/' + dirName + '/' + exam_dicts[examquery] + '/' + 'data-' + examquery + '.txt'
-                                    haveSecret = getSecret(rawaddr,dataaddr)
-                                    if(haveSecret == False):
-                                        print('获取加密字段失败')
-                                    else:
-                                        rawCode = readCode(dataaddr)
-                                        if(rawCode == False):
-                                            print('读取加密文件失败')
-                                        else:
-                                            deCode = base64Decode(rawCode)
-                                            if(deCode == False):
-                                                print('base64解密失败')
-                                            else:
-                                                writeUrl = '我的课程信息/' + dirName + '/' + exam_dicts[examquery] + '/' + 'decodeText-' + examquery + '.txt'
-                                                print(writeText(writeUrl,deCode))
-                                                mkdir('.\\我的课程信息\\' + dirName + '/' + exam_dicts[examquery] + '\\图片(含答案)\\')
-                                                haveImg = getImgUrl(writeUrl,'我的课程信息/' + dirName + '/' + exam_dicts[examquery] + '/图片(含答案)/')
-                                            
+    testingNB()  # ['love', 'my', 'dalmation'] classified as:  0      ['stupid', 'garbage'] classified as:  1
+    spamTest()  # 测试10篇文档的出错率
